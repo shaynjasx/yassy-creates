@@ -334,6 +334,7 @@ body.h #cur-o{width:52px;height:52px;}
   border:1px solid rgba(255,255,255,.07);
   border-radius:20px;
   padding:22px 20px;
+  padding-bottom:52px;
   position:relative;
   z-index:10; /* above 3D cat */
   backdrop-filter:blur(16px);
@@ -788,3 +789,27 @@ body.h #cur-o{width:52px;height:52px;}
   .cw-tab{font-size:7.5px;padding:5px 13px;}
 }
 @media(max-width:480px){.cw-grid{grid-template-columns:1fr;}}
+/* CONTACT MINI FOOTER */
+
+.ct-mini{
+  position:absolute;
+
+  left:50%;
+  bottom:18px;
+
+  transform:translateX(-50%);
+
+  width:100%;
+
+  text-align:center;
+
+  font-family:'DM Mono',monospace;
+
+  font-size:7px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+
+  color:rgba(232,224,240,.16);
+
+  pointer-events:none;
+}
