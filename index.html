@@ -229,68 +229,133 @@
 
   <!-- S3 WORK -->
   <div class="slide" id="s3" data-label="Work">
-    <div class="s-inner">
-      <div class="stg">
-        <p class="ey">Selected Work</p>
-        <h2 class="sh">Websites I've <em>built</em></h2>
+  <div class="s-inner" style="max-width:1200px;">
+ 
+    <div class="work-carousel-wrap">
+ 
+      <!-- Header: title left, arrows right -->
+      <div class="wc-header stg">
+        <div>
+          <p class="ey">Selected Work</p>
+          <h2 class="sh">Websites I've <em>built</em></h2>
+        </div>
+        <div class="wc-arrows">
+          <div class="wc-counter">
+            <span class="cur" id="wc-cur">1</span>
+            <span> / </span>
+            <span id="wc-total">6</span>
+          </div>
+          <button class="wc-arrow" id="wc-prev" aria-label="Previous">←</button>
+          <button class="wc-arrow" id="wc-next" aria-label="Next">→</button>
+        </div>
       </div>
-      <div class="wgrid">
-
-        <div class="wcard">
-          <div class="wc-v">
-            <canvas class="mc" data-h="310" data-h2="280"></canvas>
-            <div class="wc-ov"></div>
+ 
+      <!-- Carousel viewport -->
+      <div class="wc-viewport">
+        <div class="wc-track" id="wc-track">
+ 
+          <!-- CARD 1: Sales Page -->
+          <div class="wcard">
+            <div class="wc-v">
+              <canvas class="mc" data-h="310" data-h2="280"></canvas>
+              <div class="wc-ov"></div>
+            </div>
+            <div class="wc-b">
+              <div class="wc-tg"><span>Web Design</span><span>HTML/CSS</span><span>GHL</span></div>
+              <h3 class="wc-t">Website Sales Page</h3>
+              <p class="wc-d">Conversion-focused sales page with strategic flow, optimized visuals, and compelling CTAs designed to drive results.</p>
+              <a class="wc-lnk" href="https://crm.aiforbusiness.com/v2/preview/3cgkYzpnQHQcm1b4L8EN?notrack=true" target="_blank">View Live →</a>
+            </div>
           </div>
-          <div class="wc-b">
-            <div class="wc-tg"><span>Web Design</span><span>HTML/CSS</span><span>GHL</span></div>
-            <h3 class="wc-t">Website Sales Page</h3>
-            <p class="wc-d">Conversion-focused sales page with strategic flow, optimized visuals, and compelling CTAs.</p>
-            <a class="wc-lnk" href="https://crm.aiforbusiness.com/v2/preview/3cgkYzpnQHQcm1b4L8EN?notrack=true" target="_blank">View Live →</a>
+ 
+          <!-- CARD 2: Freedom Forge -->
+          <div class="wcard">
+            <div class="wc-v">
+              <canvas class="mc" data-h="320" data-h2="300"></canvas>
+              <div class="wc-ov"></div>
+            </div>
+            <div class="wc-b">
+              <div class="wc-tg"><span>WordPress</span><span>Elementor</span></div>
+              <h3 class="wc-t">Freedom Forge Mining</h3>
+              <p class="wc-d">Professional and conversion-focused WordPress site with Elementor and custom HTML/CSS enhancements.</p>
+              <a class="wc-lnk" href="https://freedomforgemining.com/" target="_blank">View Live →</a>
+            </div>
           </div>
-        </div>
-
-        <div class="wcard">
-          <div class="wc-v">
-            <canvas class="mc" data-h="320" data-h2="300"></canvas>
-            <div class="wc-ov"></div>
+ 
+          <!-- CARD 3: ASIC Docs -->
+          <div class="wcard">
+            <div class="wc-v">
+              <canvas class="mc" data-h="340" data-h2="315"></canvas>
+              <div class="wc-ov"></div>
+            </div>
+            <div class="wc-b">
+              <div class="wc-tg"><span>WordPress</span><span>Kubio</span></div>
+              <h3 class="wc-t">ASIC Docs</h3>
+              <p class="wc-d">Streamlined one-page site with custom HTML/CSS focused on clear user flow and efficient repair request submissions.</p>
+              <a class="wc-lnk" href="https://asicdocs.com/" target="_blank">View Live →</a>
+            </div>
           </div>
-          <div class="wc-b">
-            <div class="wc-tg"><span>WordPress</span><span>Elementor</span></div>
-            <h3 class="wc-t">Freedom Forge Mining</h3>
-            <p class="wc-d">Professional WordPress site with Elementor and custom HTML/CSS enhancements.</p>
-            <a class="wc-lnk" href="https://freedomforgemining.com/" target="_blank">View Live →</a>
+ 
+          <!-- CARD 4: Law Firm -->
+          <div class="wcard">
+            <div class="wc-v">
+              <canvas class="mc" data-h="200" data-h2="175"></canvas>
+              <div class="wc-ov"></div>
+            </div>
+            <div class="wc-b">
+              <div class="wc-tg"><span>HTML/CSS</span><span>JavaScript</span></div>
+              <h3 class="wc-t">Law Firm Website</h3>
+              <p class="wc-d">Modern legal services website with a clean, responsive, and professional layout built from scratch.</p>
+              <a class="wc-lnk" href="https://nopapersnofear.com/" target="_blank">View Live →</a>
+            </div>
           </div>
-        </div>
-
-        <div class="wcard">
-          <div class="wc-v">
-            <canvas class="mc" data-h="340" data-h2="315"></canvas>
-            <div class="wc-ov"></div>
-          </div>
-          <div class="wc-b">
-            <div class="wc-tg"><span>WordPress</span><span>Kubio</span></div>
-            <h3 class="wc-t">ASIC Docs</h3>
-            <p class="wc-d">Streamlined one-page site focused on clear user flow and repair request submissions.</p>
-            <a class="wc-lnk" href="https://asicdocs.com/" target="_blank">View Live →</a>
-          </div>
-        </div>
-
-        <div class="wcard">
-          <div class="wc-v">
-            <canvas class="mc" data-h="200" data-h2="175"></canvas>
-            <div class="wc-ov"></div>
-          </div>
-          <div class="wc-b">
-            <div class="wc-tg"><span>HTML/CSS</span><span>JavaScript</span></div>
-            <h3 class="wc-t">Law Firm Website</h3>
-            <p class="wc-d">Modern legal services website with clean, responsive, professional layout.</p>
-            <a class="wc-lnk" href="https://nopapersnofear.com/" target="_blank">View Live →</a>
-          </div>
-        </div>
-
-      </div>
-    </div>
+ 
+         <!-- CARD 5: MyColima -->
+<div class="wcard">
+  <div class="wc-v">
+    <canvas class="mc" data-h="270" data-h2="250"></canvas>
+    <div class="wc-ov"></div>
   </div>
+  <div class="wc-b">
+    <div class="wc-tg">
+      <span>HTML/CSS</span>
+      <span>JavaScript</span>
+      <span>Multi-lang</span>
+    </div>
+    <h3 class="wc-t">MyColima Tour Website</h3>
+    <p class="wc-d">Volunteer community platform for Tecomán, Colima, México. Features multilingual support (EN/ES/FR), program listings, property rentals, and a Gmail-integrated inquiry form.</p>
+    <a class="wc-lnk" href="https://mycolima.netlify.app/" target="_blank">View Live →</a>
+  </div>
+</div>
+ 
+       <!-- CARD 6: Lawsuit Document Preparer -->
+<div class="wcard">
+  <div class="wc-v">
+    <canvas class="mc" data-h="290" data-h2="260"></canvas>
+    <div class="wc-ov"></div>
+  </div>
+  <div class="wc-b">
+    <div class="wc-tg">
+      <span>HTML/CSS</span>
+      <span>JavaScript</span>
+      <span>Legal</span>
+    </div>
+    <h3 class="wc-t">Lawsuit Document Preparer</h3>
+    <p class="wc-d">Professional legal document preparation service in California. Clean, trust-focused layout with services overview, testimonials, and consultation request form.</p>
+    <a class="wc-lnk" href="https://lawsuitdocumentpreparer.com/" target="_blank">View Live →</a>
+  </div>
+</div>
+
+        </div><!-- /wc-track -->
+      </div><!-- /wc-viewport -->
+ 
+      <!-- Dot indicators -->
+      <div class="wc-dots" id="wc-dots"></div>
+ 
+    </div><!-- /work-carousel-wrap -->
+ 
+  </div>
+</div>
 
   <!-- S4 SKILLS -->
   <div class="slide" id="s4" data-label="Skills">

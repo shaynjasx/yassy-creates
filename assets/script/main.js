@@ -656,3 +656,134 @@ document.querySelectorAll('.ct-main-btn').forEach(btn => {
     openGmailCompose();
   });
 });
+
+/* ══════════════════════════════════════════
+   WORK CAROUSEL
+   - Prev/Next buttons
+   - Drag to swipe (mouse + touch)
+   - Keyboard left/right when Work slide is active
+   - Auto-sizes visible cards based on viewport
+   - Dot indicators
+══════════════════════════════════════════ */
+(function(){
+  const track    = document.getElementById('wc-track');
+  const prevBtn  = document.getElementById('wc-prev');
+  const nextBtn  = document.getElementById('wc-next');
+  const dotsWrap = document.getElementById('wc-dots');
+  const curEl    = document.getElementById('wc-cur');
+  const totalEl  = document.getElementById('wc-total');
+
+  if(!track) return;
+
+  const cards    = Array.from(track.querySelectorAll('.wcard'));
+  const COUNT    = cards.length;
+  let current    = 0;
+
+  /* how many cards visible at once */
+  function visibleCount(){
+    const vw = window.innerWidth;
+    if(vw >= 1100) return 3;
+    if(vw >= 700)  return 2;
+    return 1;
+  }
+
+  /* max index you can scroll to */
+  function maxIndex(){
+    return Math.max(0, COUNT - visibleCount());
+  }
+
+  /* card width + gap */
+  function stepPx(){
+    const card = cards[0];
+    const gap  = 16;
+    return card.offsetWidth + gap;
+  }
+
+  /* move track */
+  function goToCard(idx, animate = true){
+    current = Math.max(0, Math.min(idx, maxIndex()));
+
+    if(!animate) track.style.transition = 'none';
+    track.style.transform = `translateX(-${current * stepPx()}px)`;
+    if(!animate) requestAnimationFrame(() => track.style.transition = '');
+
+    // update counter
+    if(curEl)   curEl.textContent   = current + 1;
+    if(totalEl) totalEl.textContent = COUNT;
+
+    // update dots
+    dots.forEach((d,i) => d.classList.toggle('act', i === current));
+
+    // dim arrows at edges
+    if(prevBtn) prevBtn.classList.toggle('dim', current === 0);
+    if(nextBtn) nextBtn.classList.toggle('dim', current >= maxIndex());
+  }
+
+  /* build dots */
+  const dots = cards.map((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'wc-dot';
+    d.addEventListener('click', () => goToCard(i));
+    if(dotsWrap) dotsWrap.appendChild(d);
+    return d;
+  });
+
+  /* buttons */
+  if(prevBtn) prevBtn.addEventListener('click', () => goToCard(current - 1));
+  if(nextBtn) nextBtn.addEventListener('click', () => goToCard(current + 1));
+
+  /* keyboard: only when Work slide (index 2) is active on desktop */
+  window.addEventListener('keydown', e => {
+    if(isMobile()) return;
+    if(cur_s !== 2) return;
+    if(e.key === 'ArrowLeft')  { e.stopPropagation(); goToCard(current - 1); }
+    if(e.key === 'ArrowRight') { e.stopPropagation(); goToCard(current + 1); }
+  });
+
+  /* drag to swipe — mouse */
+  let dragStartX = 0, dragging = false, startCurrent = 0;
+
+  track.addEventListener('mousedown', e => {
+    dragging    = true;
+    dragStartX  = e.clientX;
+    startCurrent = current;
+    track.classList.add('dragging');
+  });
+  window.addEventListener('mousemove', e => {
+    if(!dragging) return;
+    const diff = dragStartX - e.clientX;
+    track.style.transition = 'none';
+    track.style.transform  = `translateX(-${startCurrent * stepPx() + diff}px)`;
+  });
+  window.addEventListener('mouseup', e => {
+    if(!dragging) return;
+    dragging = false;
+    track.classList.remove('dragging');
+    const diff = dragStartX - e.clientX;
+    if(Math.abs(diff) > 60){
+      goToCard(diff > 0 ? startCurrent + 1 : startCurrent - 1);
+    } else {
+      goToCard(startCurrent);
+    }
+  });
+
+  /* drag to swipe — touch */
+  let touchStartX = 0;
+  track.addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+    startCurrent = current;
+  }, { passive: true });
+  track.addEventListener('touchend', e => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if(Math.abs(diff) > 50){
+      goToCard(diff > 0 ? current + 1 : current - 1);
+    }
+  }, { passive: true });
+
+  /* recalc on resize */
+  window.addEventListener('resize', () => goToCard(current, false));
+
+  /* init */
+  goToCard(0, false);
+  if(totalEl) totalEl.textContent = COUNT;
+})();
