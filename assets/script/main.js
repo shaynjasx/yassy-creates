@@ -1,3 +1,33 @@
+
+// disable right click
+  document.addEventListener('contextmenu', e => {
+    e.preventDefault();
+  });
+
+  // disable inspect shortcuts
+  document.addEventListener('keydown', e => {
+
+    // F12
+    if(e.key === 'F12'){
+      e.preventDefault();
+    }
+
+    // CTRL+SHIFT+I
+    if(e.ctrlKey && e.shiftKey && e.key === 'I'){
+      e.preventDefault();
+    }
+
+    // CTRL+SHIFT+J
+    if(e.ctrlKey && e.shiftKey && e.key === 'J'){
+      e.preventDefault();
+    }
+
+    // CTRL+U
+    if(e.ctrlKey && e.key === 'u'){
+      e.preventDefault();
+    }
+
+  });
 /* ══════════════════════════════════════════
    CURSOR
 ══════════════════════════════════════════ */
