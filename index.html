@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>shayn · yassycreates</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,300;1,700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur-o"></div>
+<div id="prog"></div>
+<div id="wipe"></div>
+<canvas id="c3d"></canvas>
+
+<!-- NAV -->
+<nav id="nav">
+
+  <div class="n-logo">yassycreates</div>
+
+  <div class="n-links">
+    <a href="#" data-goto="0">Home</a>
+    <a href="#" data-goto="1">About</a>
+    <a href="#" data-goto="2">Work</a>
+    <a href="#" data-goto="3">Skills</a>
+    <a href="#" data-goto="5">Contact</a>
+    <span class="n-avail">Available</span>
+  </div>
+
+  <!-- MOBILE HAMBURGER -->
+  <button class="menu-btn" id="menuBtn">
+    <span></span>
+    <span></span>
+  </button>
+
+  <!-- MOBILE MENU -->
+  <div class="mob-menu" id="mobMenu">
+    <a href="#" data-goto="0">Home</a>
+    <a href="#" data-goto="1">About</a>
+    <a href="#" data-goto="2">Work</a>
+    <a href="#" data-goto="3">Skills</a>
+    <a href="#" data-goto="5">Contact</a>
+  </div>
+
+</nav>
+
+<!-- SLIDE DOTS -->
+<div id="slide-nav">
+  <div class="sdot" data-goto="0"></div>
+  <div class="sdot" data-goto="1"></div>
+  <div class="sdot" data-goto="2"></div>
+  <div class="sdot" data-goto="3"></div>
+  <div class="sdot" data-goto="4"></div>
+  <div class="sdot" data-goto="5"></div>
+</div>
+
+<!-- SLIDE COUNTER -->
+<div id="slide-count">
+  <span class="cur-n" id="sc-cur">01</span>
+  <span class="sep">/</span>
+  <span>06</span>
+</div>
+
+<!-- SLIDE LABEL -->
+<div id="slide-label">Home</div>
+
+<!-- SCROLL HINT -->
+<div class="arrow-hint" id="arr-down">
+  <span>Scroll</span>
+  <div class="arr"></div>
+</div>
+
+<!-- ══════════════ SLIDER ══════════════ -->
+<div id="slider">
+
+  <!-- S1 HERO -->
+  <div class="slide active" id="s1" data-label="Home">
+    <div class="stg" style="text-align:center;display:flex;flex-direction:column;align-items:center;">
+      <p class="h1-tag">web · graphic · video · social</p>
+      <h1 class="h1-name">
+        <span class="solid">hi, i'm</span>
+        <span class="ghost">shayn</span>
+      </h1>
+      <div class="h1-roles">
+        <span class="role">Web Design</span>
+        <span class="role">Graphic Design</span>
+        <span class="role">Video Editing</span>
+        <span class="role">Social Media</span>
+      </div>
+      <div class="h1-cta">
+        <!-- data-goto instead of onclick — more reliable -->
+        <button class="bp" data-goto="2">View My Work</button>
+        <button class="bo" data-goto="5">Let's Work Together 🤝</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2 ABOUT -->
+  <div class="slide" id="s2" data-label="About">
+    <div class="s-inner s2-grid">
+
+      <!-- LEFT: Discord Profile Card -->
+      <div class="stg" style="display:flex;flex-direction:column;gap:14px;">
+
+        <div class="dc-card" id="dc-card">
+          <div class="dc-banner">
+            <div class="dc-banner-bg"></div>
+            <div class="dc-av-wrap">
+              <img class="dc-avatar" id="dc-avatar" src="" alt="avatar"
+                onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 80 80\'><rect width=\'80\' height=\'80\' fill=\'%23c97fa8\' rx=\'40\'/><text x=\'50%25\' y=\'55%25\' text-anchor=\'middle\' dominant-baseline=\'middle\' font-size=\'36\' fill=\'%23fff\'>S</text></svg>'"/>
+              <span class="dc-status-ring" id="dc-ring"></span>
+              <span class="dc-status-dot" id="dc-dot"></span>
+            </div>
+          </div>
+          <div class="dc-body">
+            <div class="dc-name-row">
+              <span class="dc-display" id="dc-display">shayn</span>
+              <span class="dc-tag" id="dc-tag">@loading</span>
+            </div>
+            <div class="dc-status-line" id="dc-status-line">
+              <span class="dc-status-ico" id="dc-sico"></span>
+              <span class="dc-status-txt" id="dc-stxt">Fetching presence…</span>
+            </div>
+            <div class="dc-spotify" id="dc-spotify" style="display:none;">
+              <span class="dc-sp-ico">♫</span>
+              <div class="dc-sp-info">
+                <span class="dc-sp-song" id="dc-sp-song"></span>
+                <span class="dc-sp-artist" id="dc-sp-artist"></span>
+              </div>
+            </div>
+            <div class="dc-activity" id="dc-activity" style="display:none;">
+              <span class="dc-act-ico">🎮</span>
+              <div class="dc-act-info">
+                <span class="dc-act-name" id="dc-act-name"></span>
+                <span class="dc-act-detail" id="dc-act-detail"></span>
+              </div>
+            </div>
+          </div>
+          <div class="dc-shimmer"></div>
+        </div>
+
+        <div>
+          <p class="sp" style="margin-bottom:10px;">I'm <strong>Shayna Goles</strong> — PH-based web &amp; graphic designer · video editor · social media manager</p>
+          <div class="a-pills" style="margin-top:16px;">
+            <span class="pill">WordPress</span>
+            <span class="pill">Photoshop</span>
+            <span class="pill">Premiere</span>
+            <span class="pill">CapCut</span>
+            <span class="pill">HTML/CSS</span>
+            <span class="pill">GoHighLevel</span>
+            <span class="pill">VS Code</span>
+            <span class="pill">Meta Business Suite</span>
+            <span class="pill">JavaScript</span>
+            <span class="pill">Google Workspace</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Resume Panel -->
+      <div class="resume-panel stg">
+        <div class="res-header">
+          <div>
+            <p class="ey" style="margin-bottom:10px;">About me</p>
+            <h2 class="sh" style="font-size:clamp(26px,3vw,40px);margin-bottom:4px;">Shayna <em>Goles</em></h2>
+            <p style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);">Davao, PH · yassycreates.lol</p>
+          </div>
+          <a class="res-dl-btn" href="./assets/about/shaynacvup.pdf" download target="_blank" title="Download Resume">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Full Resume
+          </a>
+        </div>
+
+        <div class="res-sections">
+          <div class="res-sec">
+            <div class="res-sec-label">Experience</div>
+            <div class="res-items">
+              <div class="res-item">
+                <div class="res-dot"></div>
+                <div class="res-item-body">
+                  <div class="res-role">Creative Director</div>
+                  <div class="res-company">Contract · October 2025 — January 2026</div>
+                  <div class="res-desc">Crafted brand style guides, website mockups, and product designs. Translated brand vision into strategic, user-focused designs.</div>
+                </div>
+              </div>
+              <div class="res-item">
+                <div class="res-dot"></div>
+                <div class="res-item-body">
+                  <div class="res-role">Social Media Manager / General VA</div>
+                  <div class="res-company">Smart Virtual Staff · July 2023 — March 2026</div>
+                  <div class="res-desc">Managed social media content, created graphics and reels, handled admin tasks, assisted with web design and branding campaigns.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="res-sec">
+            <div class="res-sec-label">Education</div>
+            <div class="res-items">
+              <div class="res-item">
+                <div class="res-dot"></div>
+                <div class="res-item-body">
+                  <div class="res-role">BS Computer Science</div>
+                  <div class="res-company">University of Mindanao · Graduated April 2024</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="res-sec">
+            <div class="res-sec-label">Core Skills</div>
+            <div class="res-skill-bars">
+              <div class="rsb-item"><span class="rsb-lbl">Web Design</span><div class="rsb-track"><div class="rsb-fill" style="--p:96%"></div></div></div>
+              <div class="rsb-item"><span class="rsb-lbl">Graphic Design</span><div class="rsb-track"><div class="rsb-fill" style="--p:88%"></div></div></div>
+              <div class="rsb-item"><span class="rsb-lbl">Video Editing</span><div class="rsb-track"><div class="rsb-fill" style="--p:85%"></div></div></div>
+              <div class="rsb-item"><span class="rsb-lbl">Social Media</span><div class="rsb-track"><div class="rsb-fill" style="--p:92%"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- S3 WORK -->
+  <div class="slide" id="s3" data-label="Work">
+    <div class="s-inner">
+      <div class="stg">
+        <p class="ey">Selected Work</p>
+        <h2 class="sh">Websites I've <em>built</em></h2>
+      </div>
+      <div class="wgrid">
+
+        <div class="wcard">
+          <div class="wc-v">
+            <canvas class="mc" data-h="310" data-h2="280"></canvas>
+            <div class="wc-ov"></div>
+          </div>
+          <div class="wc-b">
+            <div class="wc-tg"><span>Web Design</span><span>HTML/CSS</span><span>GHL</span></div>
+            <h3 class="wc-t">Website Sales Page</h3>
+            <p class="wc-d">Conversion-focused sales page with strategic flow, optimized visuals, and compelling CTAs.</p>
+            <a class="wc-lnk" href="https://crm.aiforbusiness.com/v2/preview/3cgkYzpnQHQcm1b4L8EN?notrack=true" target="_blank">View Live →</a>
+          </div>
+        </div>
+
+        <div class="wcard">
+          <div class="wc-v">
+            <canvas class="mc" data-h="320" data-h2="300"></canvas>
+            <div class="wc-ov"></div>
+          </div>
+          <div class="wc-b">
+            <div class="wc-tg"><span>WordPress</span><span>Elementor</span></div>
+            <h3 class="wc-t">Freedom Forge Mining</h3>
+            <p class="wc-d">Professional WordPress site with Elementor and custom HTML/CSS enhancements.</p>
+            <a class="wc-lnk" href="https://freedomforgemining.com/" target="_blank">View Live →</a>
+          </div>
+        </div>
+
+        <div class="wcard">
+          <div class="wc-v">
+            <canvas class="mc" data-h="340" data-h2="315"></canvas>
+            <div class="wc-ov"></div>
+          </div>
+          <div class="wc-b">
+            <div class="wc-tg"><span>WordPress</span><span>Kubio</span></div>
+            <h3 class="wc-t">ASIC Docs</h3>
+            <p class="wc-d">Streamlined one-page site focused on clear user flow and repair request submissions.</p>
+            <a class="wc-lnk" href="https://asicdocs.com/" target="_blank">View Live →</a>
+          </div>
+        </div>
+
+        <div class="wcard">
+          <div class="wc-v">
+            <canvas class="mc" data-h="200" data-h2="175"></canvas>
+            <div class="wc-ov"></div>
+          </div>
+          <div class="wc-b">
+            <div class="wc-tg"><span>HTML/CSS</span><span>JavaScript</span></div>
+            <h3 class="wc-t">Law Firm Website</h3>
+            <p class="wc-d">Modern legal services website with clean, responsive, professional layout.</p>
+            <a class="wc-lnk" href="https://nopapersnofear.com/" target="_blank">View Live →</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- S4 SKILLS -->
+  <div class="slide" id="s4" data-label="Skills">
+    <div class="s-inner">
+      <div class="stg">
+        <p class="ey">What I bring</p>
+        <h2 class="sh">Creative &amp; <em>technical skills</em></h2>
+      </div>
+      <div class="sk-grid">
+        <div class="skc">
+          <span class="skc-ico">🌐</span>
+          <div class="skc-t">Web Design & Development</div>
+          <ul class="sk-list">
+            <li>HTML / CSS / JavaScript</li>
+            <li>Responsive Web Design</li>
+            <li>WordPress / Elementor</li>
+            <li>GoHighLevel</li>
+            <li>UI / UX Design</li>
+            <li>Landing Pages</li>
+          </ul>
+        </div>
+        <div class="skc">
+          <span class="skc-ico">🎨</span>
+          <div class="skc-t">Graphic Design & Branding</div>
+          <ul class="sk-list">
+            <li>Adobe Photoshop</li>
+            <li>Canva Pro</li>
+            <li>Brand Identity</li>
+            <li>Social Media Graphics</li>
+            <li>Marketing Materials</li>
+            <li>Content Design</li>
+          </ul>
+        </div>
+        <div class="skc">
+          <span class="skc-ico">🎬</span>
+          <div class="skc-t">Video Editing & Content</div>
+          <ul class="sk-list">
+            <li>CapCut</li>
+            <li>DaVinci Resolve</li>
+            <li>Short-form Content</li>
+            <li>Reels Editing</li>
+            <li>Motion Graphics</li>
+            <li>Social Media Content</li>
+          </ul>
+        </div>
+        <div class="skc">
+          <span class="skc-ico">⚡</span>
+          <div class="skc-t">Workflow & Collaboration</div>
+          <ul class="sk-list">
+            <li>Meta Business Suite</li>
+            <li>Google Workspace</li>
+            <li>Trello / ClickUp</li>
+            <li>Slack / WhatsApp</li>
+            <li>Content Scheduling</li>
+            <li>Administrative Support</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S5 STATS -->
+  <div class="slide" id="s5" data-label="Stats">
+    <div class="s-inner">
+      <div class="stg" style="text-align:center;">
+        <p class="ey" style="justify-content:center;">Experience & Growth</p>
+        <h2 class="sh">A few <em>highlights</em></h2>
+      </div>
+      <div class="stat-row">
+        <div class="stb"><span class="stb-n" data-n="35" data-plus="true">0</span><span class="stb-l">Projects Completed</span></div>
+        <div class="stb"><span class="stb-n" data-n="3">0</span><span class="stb-l">Years Experience</span></div>
+        <div class="stb"><span class="stb-n" data-n="10" data-plus="true">0</span><span class="stb-l">Brands Worked With</span></div>
+        <div class="stb"><span class="stb-n" data-n="4">0</span><span class="stb-l">Creative Services</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S6 CONTACT -->
+  <div class="slide" id="s6" data-label="Contact">
+    <div class="s-inner">
+      <div class="contact-grid stg">
+
+        <!-- LEFT -->
+        <div class="ct-left">
+          <div class="ct-status-pill">
+            <span class="dot-g"></span>
+            Available for Projects
+          </div>
+          <h2 class="ct-title">
+            let's work
+            <span class="line2">together.</span>
+          </h2>
+          <p class="ct-desc">Open for freelance, collaborations, and long-term creative partnerships.</p>
+          <div class="ct-links">
+            <a href="mailto:hello@yassycreates.lol" class="ct-link">
+              <div class="ct-link-left"><span class="ct-icon">✦</span>shayna.goles31@gmail.com</div>
+              <span class="ct-arrow">↗</span>
+            </a>
+            <a href="https://www.linkedin.com/in/shaynagolesx/" target="_blank" class="ct-link">
+              <div class="ct-link-left"><span class="ct-icon">✦</span>LinkedIn Profile</div>
+              <span class="ct-arrow">↗</span>
+            </a>
+            <a href="https://github.com/shaynjasx" target="_blank" class="ct-link">
+              <div class="ct-link-left"><span class="ct-icon">✦</span>GitHub Portfolio</div>
+              <span class="ct-arrow">↗</span>
+            </a>
+            <a href="https://www.facebook.com/profile.php?id=100091715452741" target="_blank" class="ct-link">
+              <div class="ct-link-left"><span class="ct-icon">✦</span>Facebook</div>
+              <span class="ct-arrow">↗</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="ct-card">
+          <div class="ct-card-head">
+            <h3>availability</h3>
+            <span class="ct-sparkle">✦</span>
+          </div>
+          <div class="ct-info">
+            <div class="ct-row"><span>STATUS</span><strong>Available Now</strong></div>
+            <div class="ct-row"><span>TYPE</span><strong>Freelance / Remote</strong></div>
+            <div class="ct-row"><span>TIMEZONE</span><strong>GMT+8 Philippines</strong></div>
+            <div class="ct-row"><span>RESPONSE</span><strong>Within 24 Hours</strong></div>
+          </div>
+          <!-- ct-main-btn — Gmail compose wired in main.js -->
+          <a href="#" class="ct-main-btn">Email Me Directly ↗</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div><!-- #slider -->
+
+<script src="/assets/script/main.js"></script>
+</body>
+</html>
