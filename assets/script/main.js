@@ -40,7 +40,7 @@ const slides   = document.querySelectorAll('.slide');
 const TOTAL    = slides.length;
 let cur_s = 0, busy = false;
 
-const labels   = ['Home','About','Work','Skills','Stats','Contact'];
+const labels   = ['Home','About','Work','Creative','Skills','Stats','Contact'];
 const dots     = document.querySelectorAll('.sdot');
 const navLinks = document.querySelectorAll('.n-links a:not(.n-avail)');
 const prog     = document.getElementById('prog');
@@ -52,7 +52,7 @@ function pad(n) { return n < 10 ? '0' + n : String(n); }
 function updateUI(idx) {
   dots.forEach((d,i) => d.classList.toggle('act', i === idx));
   navLinks.forEach((a,i) => {
-    const targets = [0,1,2,3,5];
+    const targets = [0,1,2,4,6];
     a.classList.toggle('act', targets[i] === idx);
   });
   if(prog) prog.style.width = ((idx / (TOTAL-1)) * 100) + '%';
@@ -67,7 +67,7 @@ function updateUI(idx) {
 function goTo(idx, dir) {
   // MOBILE / TABLET: just scroll to section
   if(isMobile()) {
-    const sectionIds = ['s1','s2','s3','s4','s5','s6'];
+    const sectionIds = ['s1','s2','s3','s3b','s4','s5','s6'];
     const target = document.getElementById(sectionIds[idx]);
     if(target) {
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -187,7 +187,7 @@ document.addEventListener('click', e => {
 ══════════════════════════════════════════ */
 window.addEventListener('scroll', () => {
   if(!isMobile()) return;
-  const sectionIds = ['s1','s2','s3','s4','s5','s6'];
+  const sectionIds = ['s1','s2','s3','s3b','s4','s5','s6'];
   const scrollMid  = window.scrollY + window.innerHeight * 0.4;
   sectionIds.forEach((id, i) => {
     const sec = document.getElementById(id);
@@ -786,4 +786,52 @@ document.querySelectorAll('.ct-main-btn').forEach(btn => {
   /* init */
   goToCard(0, false);
   if(totalEl) totalEl.textContent = COUNT;
+})();
+
+/* ══════════════════════════════════════════
+   CREATIVE WORK FILTER TABS (S3B)
+══════════════════════════════════════════ */
+(function(){
+  const tabs  = document.querySelectorAll('.cw-tab');
+  const cards = document.querySelectorAll('.cwc');
+  if(!tabs.length) return;
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function(){
+      // update active tab
+      tabs.forEach(t => t.classList.remove('act'));
+      this.classList.add('act');
+
+      const filter = this.dataset.filter;
+
+      cards.forEach(card => {
+        const cat = card.dataset.cat;
+        if(filter === 'all' || cat === filter){
+          card.classList.remove('hidden');
+          // stagger fade-in
+          card.style.animation = 'none';
+          card.offsetHeight; // reflow
+          card.style.animation = '';
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    });
+  });
+
+  // 3D tilt for creative cards
+  cards.forEach(c => {
+    c.addEventListener('mousemove', e => {
+      if(isMobile()) return;
+      const r = c.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width  - .5;
+      const y = (e.clientY - r.top)  / r.height - .5;
+      c.style.transform  = `translateY(-7px) rotateX(${-y*9}deg) rotateY(${x*9}deg)`;
+      c.style.transition = 'transform .12s ease-out';
+    });
+    c.addEventListener('mouseleave', () => {
+      c.style.transition = 'transform .55s cubic-bezier(.16,1,.3,1)';
+      c.style.transform  = '';
+    });
+  });
 })();
