@@ -407,7 +407,7 @@ if(menuBtn && mobMenu){
    Opens Gmail with a pre-filled inquiry form
 ══════════════════════════════════════════ */
 function openGmailCompose(){
-  const to      = 'hello@yassycreates.lol';
+  const to      = 'shayna.goles31@gmail.com';
   const subject = 'Project Inquiry — [Your Name Here]';
   const body    =
 `Hi Shayn! 👋
