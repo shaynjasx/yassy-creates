@@ -21,7 +21,6 @@ A cute dark-mode portfolio crafted with immersive animations, interactive 3D vis
 - HTML5
 - CSS3
 - Vanilla JavaScript
-- Three.js
 
 ---
 
