@@ -1044,3 +1044,65 @@ body.cur-hover .cur-ring {
   pointer-events: none !important;
   z-index: 0 !important;
 }
+
+/* ══════════════════════════════════════════
+   LOADER — full screen intro progress bar
+══════════════════════════════════════════ */
+#loader {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: #0a0910;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  transition: opacity .55s ease;
+}
+#loader.out {
+  display: none;
+}
+
+.ld-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 260px;
+}
+
+.ld-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-style: italic;
+  color: var(--rose);
+  opacity: .75;
+  letter-spacing: .04em;
+}
+
+.ld-bar-wrap {
+  width: 100%;
+  height: 1px;
+  background: rgba(232,224,240,.08);
+  border-radius: 1px;
+  overflow: hidden;
+  position: relative;
+}
+
+.ld-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--rose), var(--mauve));
+  border-radius: 1px;
+  transition: width .1s linear;
+  box-shadow: 0 0 8px rgba(201,127,168,.4);
+}
+
+.ld-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .3em;
+  color: rgba(232,224,240,.25);
+  min-width: 28px;
+  text-align: center;
+}
