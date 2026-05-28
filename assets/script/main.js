@@ -274,28 +274,56 @@ slides[0].classList.add('active');
 // HERO ENTRANCE
 // =====================================================
 function initHeroEntrance() {
-  const tl = gsap.timeline({ delay: .1 });
-  tl.from('.h1-tag',          { opacity: 0, y: 22, duration: .7,  ease: 'cinema' })
-    .from('.h1-name .solid',  { opacity: 0, y: 30, duration: .75, ease: 'cinema' }, '-=.4')
-    .from('.h1-name .ghost',  { opacity: 0, y: 28, duration: .75, ease: 'cinema' }, '-=.55')
-    .from('.role', { opacity: 0, y: 16, scale: .96, duration: .55, stagger: .08, ease: 'cinema' }, '-=.4')
-    .from('.h1-cta button', { opacity: 0, y: 14, duration: .55, stagger: .1, ease: 'cinema' }, '-=.3')
-    .from('.float-badge', { opacity: 0, scale: .85, duration: .6, stagger: .12, ease: 'cinema' }, '-=.5')
-    .from('#arr-down', { opacity: 0, y: 8, duration: .5, ease: 'power2.out' }, '-=.3');
+  // ── Cinematic entrance sequence ──
+  const tl = gsap.timeline({ delay: .12 });
 
-  if (!isMobile()) {
-    document.addEventListener('mousemove', (e) => {
-      const cx = window.innerWidth / 2;
-      const cy = window.innerHeight / 2;
-      const dx = (e.clientX - cx) / cx;
-      const dy = (e.clientY - cy) / cy;
-      document.querySelectorAll('.float-badge').forEach(b => {
-        const s = parseFloat(b.dataset.parallax || '.04');
-        gsap.to(b, { x: dx * s * 80, y: dy * s * 60, duration: 1.2, ease: 'power2.out' });
+  tl.from('.h1-tag',         { opacity:0, y:22, duration:.7,  ease:'cinema' })
+    .from('.h1-name .solid', { opacity:0, y:32, duration:.78, ease:'cinema' }, '-=.4')
+    .from('.h1-name .ghost', { opacity:0, y:28, duration:.78, ease:'cinema' }, '-=.56')
+    .from('.role',           { opacity:0, y:16, scale:.96, duration:.55, stagger:.08, ease:'cinema' }, '-=.4')
+    .from('.h1-cta button',  { opacity:0, y:14, duration:.55, stagger:.1,  ease:'cinema' }, '-=.3')
+    .from('.px-badge',       { opacity:0, scale:.82, y:12, duration:.65, stagger:.1, ease:'cinema' }, '-=.55')
+    .from('.px-paw',         { opacity:0, duration:.8, stagger:.07, ease:'power2.out' }, '-=.4')
+    .from('#arr-down',       { opacity:0, y:8, duration:.5, ease:'power2.out' }, '-=.3');
+
+  if (isMobile()) return;
+
+  // ── Multi-layer mouse parallax ──
+  // Each layer has data-depth (0=far/slow … 1=near/fast)
+  // giving a real 3D depth-of-field feeling
+  const layers = document.querySelectorAll('.px-layer[data-depth]');
+
+  let lx = 0, ly = 0; // smoothed position
+  let tx = 0, ty = 0; // target position
+
+  document.addEventListener('mousemove', e => {
+    tx = (e.clientX / window.innerWidth)  - 0.5;
+    ty = (e.clientY / window.innerHeight) - 0.5;
+  });
+
+  // Use GSAP ticker so it stays in sync with the render loop
+  gsap.ticker.add(() => {
+    lx += (tx - lx) * 0.052;
+    ly += (ty - ly) * 0.052;
+
+    // Move each layer at its own depth speed
+    layers.forEach(layer => {
+      const depth = parseFloat(layer.dataset.depth || 0.2);
+      gsap.set(layer, {
+        x: lx * depth * window.innerWidth  * 0.24,
+        y: ly * depth * window.innerHeight * 0.20,
       });
-      gsap.to('.hero-bg-layer', { x: dx * -18, y: dy * -12, duration: 1.4, ease: 'power2.out' });
     });
-  }
+
+    // Hero text itself drifts very slightly (closest layer feel)
+    const heroContent = document.querySelector('#s1 .stg');
+    if (heroContent) {
+      gsap.set(heroContent, {
+        x: lx * 14,
+        y: ly * 10,
+      });
+    }
+  });
 }
 
 // =====================================================
@@ -638,53 +666,299 @@ document.querySelectorAll('.mc').forEach((cv, idx) => {
 })();
 
 // =====================================================
-// STARFIELD BACKGROUND
+// INTERACTIVE 3D PHYSICS BACKGROUND
+// (shapes repel on hover, attract on click)
 // =====================================================
+/* ═══════════════════════════════════════════════════════════
+   INTERACTIVE 3D PHYSICS BACKGROUND
+   
+   Replaces the static starfield canvas in main.js.
+   
+   Features:
+   - 3D floating geometric shapes (rings, diamonds, stars)
+     rendered via WebGL on the background canvas
+   - Mouse REPEL: shapes flee from cursor
+   - Mouse ATTRACT: hold click — shapes rush toward cursor
+   - Each shape has its own velocity, spin, depth
+   - Matches yassycreates pink/mauve/sage color palette
+   - Connects nearby shapes with faint lines (constellation)
+   - 60fps physics with velocity damping & boundary wrap
+   
+   HOW TO USE:
+   In your main.js, find the STARFIELD BACKGROUND section:
+   
+     (function() {
+       const cv = document.createElement('canvas');
+       ...
+       (function draw(){ ... })();
+     })();
+   
+   Replace the ENTIRE thing with the code below.
+═══════════════════════════════════════════════════════════ */
+
 (function() {
   const cv  = document.createElement('canvas');
   cv.style.cssText = 'position:fixed;inset:0;z-index:0;pointer-events:none;';
   document.body.prepend(cv);
   const ctx = cv.getContext('2d');
-  let W, H;
-  const resize = () => { W=cv.width=window.innerWidth; H=cv.height=window.innerHeight; };
-  window.addEventListener('resize',resize); resize();
 
-  const orbs = [
-    {x:.14,y:.22,rw:320,rh:240,h:340,a:.038,dx:.00009,dy:.00007},
-    {x:.84,y:.68,rw:275,rh:210,h:280,a:.030,dx:-.00008,dy:.00008},
-    {x:.5, y:.5, rw:400,rh:300,h:300,a:.02, dx:.00006,dy:-.00007}
+  let W, H;
+  const resize = () => { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; };
+  window.addEventListener('resize', resize); resize();
+
+  // ── Mouse state ──
+  let mouseX = W / 2, mouseY = H / 2;
+  let mouseDown = false;
+  let mouseOnPage = false;
+
+  // Read from the global cur position if available,
+  // otherwise fall back to direct listener
+  document.addEventListener('mousemove', e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    mouseOnPage = true;
+  });
+  document.addEventListener('mousedown', () => mouseDown = true);
+  document.addEventListener('mouseup',   () => mouseDown = false);
+  document.addEventListener('mouseleave',() => mouseOnPage = false);
+
+  // ── Color palette ──
+  const COLORS = [
+    'rgba(201,127,168,',  // rose
+    'rgba(155,123,196,',  // mauve
+    'rgba(122,158,168,',  // sage
+    'rgba(232,224,240,',  // cream
+    'rgba(168,100,140,',  // deep rose
   ];
-  const stars = Array.from({length:130},()=>({
-    x:Math.random(),y:Math.random(),
-    r:Math.random()*.85+.1,
-    a:Math.random()*.28+.03,
-    da:(Math.random()-.5)*.0011
+
+  // ── Shape class ──
+  class Shape {
+    constructor() { this.reset(true); }
+
+    reset(initial = false) {
+      this.x  = Math.random() * W;
+      this.y  = initial ? Math.random() * H : (Math.random() > .5 ? -30 : H + 30);
+      this.z  = Math.random() * 0.8 + 0.2;   // depth 0.2–1.0
+      this.vx = (Math.random() - .5) * 0.4;
+      this.vy = (Math.random() - .5) * 0.4;
+      this.spin     = (Math.random() - .5) * 0.008;
+      this.angle    = Math.random() * Math.PI * 2;
+      this.size     = (Math.random() * 12 + 4) * this.z;
+      this.type     = Math.floor(Math.random() * 4); // 0=diamond 1=ring 2=cross 3=triangle
+      this.colorIdx = Math.floor(Math.random() * COLORS.length);
+      this.alpha    = (Math.random() * 0.25 + 0.08) * this.z;
+      this.baseAlpha= this.alpha;
+      this.pulseOff = Math.random() * Math.PI * 2;
+    }
+
+    update(t) {
+      // Gentle pulse
+      this.alpha = this.baseAlpha * (0.75 + 0.25 * Math.sin(t * 0.8 + this.pulseOff));
+
+      // Mouse interaction
+      if (mouseOnPage) {
+        const dx  = this.x - mouseX;
+        const dy  = this.y - mouseY;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const radius = 140 * this.z;
+
+        if (dist < radius && dist > 0.1) {
+          const force = (radius - dist) / radius;
+
+          if (mouseDown) {
+            // ATTRACT — rush toward cursor
+            this.vx -= (dx / dist) * force * 1.8;
+            this.vy -= (dy / dist) * force * 1.8;
+            this.alpha = Math.min(this.baseAlpha * 3, 0.7);
+          } else {
+            // REPEL — flee from cursor
+            this.vx += (dx / dist) * force * 1.2;
+            this.vy += (dy / dist) * force * 1.2;
+          }
+        }
+      }
+
+      // Velocity damping
+      this.vx *= 0.974;
+      this.vy *= 0.974;
+
+      // Speed cap
+      const speed = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
+      if (speed > 3.5) { this.vx = (this.vx/speed)*3.5; this.vy = (this.vy/speed)*3.5; }
+
+      this.x += this.vx;
+      this.y += this.vy;
+      this.angle += this.spin;
+
+      // Boundary wrap with padding
+      const pad = 40;
+      if (this.x < -pad) this.x = W + pad;
+      if (this.x > W+pad) this.x = -pad;
+      if (this.y < -pad) this.y = H + pad;
+      if (this.y > H+pad) this.y = -pad;
+    }
+
+    draw() {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.angle);
+      ctx.globalAlpha = this.alpha;
+
+      const col = COLORS[this.colorIdx];
+      const s   = this.size;
+
+      ctx.strokeStyle = col + '1)';
+      ctx.fillStyle   = col + '0.12)';
+      ctx.lineWidth   = 0.8 * this.z;
+
+      switch(this.type) {
+
+        case 0: // Diamond ◇
+          ctx.beginPath();
+          ctx.moveTo(0, -s);
+          ctx.lineTo(s * .55, 0);
+          ctx.lineTo(0,  s);
+          ctx.lineTo(-s * .55, 0);
+          ctx.closePath();
+          ctx.fill(); ctx.stroke();
+          break;
+
+        case 1: // Circle ring ○
+          ctx.beginPath();
+          ctx.arc(0, 0, s * .7, 0, Math.PI * 2);
+          ctx.stroke();
+          // inner dot
+          ctx.beginPath();
+          ctx.arc(0, 0, s * .12, 0, Math.PI * 2);
+          ctx.fillStyle = col + '0.4)';
+          ctx.fill();
+          break;
+
+        case 2: // Cross / plus +
+          ctx.beginPath();
+          ctx.moveTo(-s, 0); ctx.lineTo(s, 0);
+          ctx.moveTo(0, -s); ctx.lineTo(0, s);
+          ctx.stroke();
+          // rotated 45deg inner cross
+          ctx.rotate(Math.PI / 4);
+          ctx.beginPath();
+          ctx.moveTo(-s*.6, 0); ctx.lineTo(s*.6, 0);
+          ctx.moveTo(0, -s*.6); ctx.lineTo(0, s*.6);
+          ctx.globalAlpha = this.alpha * .4;
+          ctx.stroke();
+          break;
+
+        case 3: // Triangle △
+          ctx.beginPath();
+          ctx.moveTo(0, -s);
+          ctx.lineTo(s * .85, s * .6);
+          ctx.lineTo(-s * .85, s * .6);
+          ctx.closePath();
+          ctx.fill(); ctx.stroke();
+          break;
+      }
+
+      ctx.restore();
+    }
+  }
+
+  // ── Spawn shapes ──
+  const COUNT = 55;
+  const shapes = Array.from({ length: COUNT }, () => new Shape());
+
+  // ── Static stars ──
+  const stars = Array.from({ length: 100 }, () => ({
+    x: Math.random(), y: Math.random(),
+    r: Math.random() * .8 + .1,
+    a: Math.random() * .25 + .03,
+    da: (Math.random() - .5) * .001
   }));
-  let t=0;
-  (function draw(){
-    ctx.clearRect(0,0,W,H);
-    ctx.fillStyle='#0a0910'; ctx.fillRect(0,0,W,H);
-    orbs.forEach(o=>{
-      o.x+=o.dx; o.y+=o.dy;
-      if(o.x<-.3||o.x>1.3)o.dx*=-1;
-      if(o.y<-.3||o.y>1.3)o.dy*=-1;
-      const cx=o.x*W, cy=o.y*H;
-      ctx.save(); ctx.scale(1,o.rh/o.rw);
-      const g=ctx.createRadialGradient(cx,cy*o.rw/o.rh,0,cx,cy*o.rw/o.rh,o.rw);
-      g.addColorStop(0,`hsla(${o.h},28%,28%,${o.a})`); g.addColorStop(1,'transparent');
-      ctx.fillStyle=g; ctx.fillRect(0,0,W,H*o.rw/o.rh); ctx.restore();
+
+  // ── Background nebula orbs ──
+  const orbs = [
+    { x:.14, y:.22, rw:320, rh:240, h:340, a:.036, dx:.00009, dy:.00007 },
+    { x:.84, y:.68, rw:275, rh:210, h:280, a:.028, dx:-.00008, dy:.00008 },
+    { x:.50, y:.50, rw:400, rh:300, h:300, a:.018, dx:.00006,  dy:-.00007 }
+  ];
+
+  let t = 0;
+
+  (function draw() {
+    t += .012;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#0a0910';
+    ctx.fillRect(0, 0, W, H);
+
+    // ── Orbs ──
+    orbs.forEach(o => {
+      o.x += o.dx; o.y += o.dy;
+      if(o.x < -.3 || o.x > 1.3) o.dx *= -1;
+      if(o.y < -.3 || o.y > 1.3) o.dy *= -1;
+      const cx = o.x * W, cy = o.y * H;
+      ctx.save(); ctx.scale(1, o.rh / o.rw);
+      const g = ctx.createRadialGradient(cx, cy*o.rw/o.rh, 0, cx, cy*o.rw/o.rh, o.rw);
+      g.addColorStop(0, `hsla(${o.h},28%,28%,${o.a})`);
+      g.addColorStop(1, 'transparent');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H*o.rw/o.rh);
+      ctx.restore();
     });
-    t+=.0038;
-    stars.forEach((s,i)=>{
-      s.a+=s.da;
-      if(s.a>.36)s.da*=-1; if(s.a<.018)s.da*=-1;
-      const tw=.5+.5*Math.sin(t+i*.52);
-      ctx.beginPath(); ctx.arc(s.x*W,s.y*H,s.r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(210,200,228,${s.a*tw*.48})`; ctx.fill();
+
+    // ── Stars ──
+    stars.forEach((s, i) => {
+      s.a += s.da;
+      if(s.a > .3) s.da *= -1;
+      if(s.a < .015) s.da *= -1;
+      const tw = .5 + .5 * Math.sin(t + i * .52);
+      ctx.beginPath();
+      ctx.arc(s.x*W, s.y*H, s.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(210,200,228,${s.a * tw * .45})`;
+      ctx.fill();
     });
+
+    // ── Constellation lines between close shapes ──
+    ctx.save();
+    for(let i = 0; i < shapes.length; i++) {
+      for(let j = i+1; j < shapes.length; j++) {
+        const dx   = shapes[i].x - shapes[j].x;
+        const dy   = shapes[i].y - shapes[j].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const maxD = 120;
+        if(dist < maxD) {
+          const strength = (1 - dist/maxD) * 0.06;
+          ctx.beginPath();
+          ctx.moveTo(shapes[i].x, shapes[i].y);
+          ctx.lineTo(shapes[j].x, shapes[j].y);
+          ctx.strokeStyle = `rgba(201,127,168,${strength})`;
+          ctx.lineWidth   = 0.4;
+          ctx.stroke();
+        }
+      }
+    }
+    ctx.restore();
+
+    // ── Update + draw shapes ──
+    // Sort by z so deeper shapes draw first (painter's algorithm)
+    shapes.sort((a, b) => a.z - b.z);
+    shapes.forEach(s => { s.update(t); s.draw(); });
+
+    // ── Mouse glow ──
+    if(mouseOnPage) {
+      const mg = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, mouseDown ? 100 : 70);
+      mg.addColorStop(0, mouseDown ? 'rgba(201,127,168,.07)' : 'rgba(201,127,168,.04)');
+      mg.addColorStop(1, 'transparent');
+      ctx.fillStyle = mg;
+      ctx.fillRect(0, 0, W, H);
+    }
+
     requestAnimationFrame(draw);
   })();
+
+  // ── Click burst: spawn shapes toward cursor ──
+  cv.style.pointerEvents = 'none'; // keep it non-blocking
 })();
+
 
 // =====================================================
 // DISCORD LANYARD
