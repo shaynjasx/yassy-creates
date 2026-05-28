@@ -315,12 +315,14 @@ function initHeroEntrance() {
       });
     });
 
-    // Hero text itself drifts very slightly (closest layer feel)
-    const heroContent = document.querySelector('#s1 .stg');
+    // Hero content drifts very slightly — only visual, pointer events stay on original pos
+    // We use CSS transform so layout doesn't shift, keeping buttons clickable
+    const heroContent = document.querySelector('#s1 .hero-content');
     if (heroContent) {
+      // Keep movement tiny so buttons remain under cursor
       gsap.set(heroContent, {
-        x: lx * 14,
-        y: ly * 10,
+        x: lx * 8,
+        y: ly * 6,
       });
     }
   });

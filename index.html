@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>shayn · yassycreates</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,300;1,700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
-<!-- GSAP CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/CustomEase.min.js"></script>
@@ -95,41 +94,54 @@
 
   <!-- S1 HERO -->
   <div class="slide active" id="s1" data-label="Home">
-    <!-- Parallax layers -->
-    <div class="hero-bg-layer" id="hero-bg"></div>
-    <div class="hero-orbs">
-      <div class="hero-orb orb1"></div>
-      <div class="hero-orb orb2"></div>
-      <div class="hero-orb orb3"></div>
+
+    <!-- PARALLAX LAYERS — pointer-events:none so they NEVER block clicks -->
+    <div class="px-layer" data-depth="0.07" style="pointer-events:none!important;">
+      <div class="px-orb px-orb1"></div>
+      <div class="px-orb px-orb2"></div>
+      <div class="px-orb px-orb3"></div>
     </div>
 
-    <div class="stg hero-stg" style="text-align:center;display:flex;flex-direction:column;align-items:center;position:relative;z-index:5;">
-      <div class="hero-eyebrow">
-        <span class="he-line"></span>
-        <p class="h1-tag" id="hero-tag">web · graphic · video · social</p>
-        <span class="he-line"></span>
-      </div>
-      <h1 class="h1-name" id="hero-title">
-        <span class="solid h1-word" data-split>hi, i'm</span>
-        <span class="ghost h1-word" data-split>shayn</span>
+    <div class="px-layer" data-depth="0.14" style="pointer-events:none!important;">
+      <div class="px-grid"></div>
+    </div>
+
+    <div class="px-layer" data-depth="0.26" style="pointer-events:none!important;">
+      <div class="px-badge px-b1">Web Design</div>
+      <div class="px-badge px-b2">Branding</div>
+      <div class="px-badge px-b3">Video Editing</div>
+      <div class="px-badge px-b4">Social Media</div>
+      <div class="px-badge px-b5">UI / UX</div>
+    </div>
+
+    <div class="px-layer" data-depth="0.42" style="pointer-events:none!important;">
+      <span class="px-paw p1">🐾</span>
+      <span class="px-paw p2">🐾</span>
+      <span class="px-paw p3">🐾</span>
+      <span class="px-paw p4">✦</span>
+      <span class="px-paw p5">✦</span>
+      <span class="px-paw p6">✦</span>
+    </div>
+
+    <!-- HERO CONTENT — above all layers, pointer-events:auto -->
+    <div class="stg hero-content">
+      <p class="h1-tag">web · graphic · video · social</p>
+      <h1 class="h1-name">
+        <span class="solid">hi, i'm</span>
+        <span class="ghost">shayn</span>
       </h1>
-      <div class="h1-roles" id="hero-roles">
+      <div class="h1-roles">
         <span class="role">Web Design</span>
         <span class="role">Graphic Design</span>
         <span class="role">Video Editing</span>
         <span class="role">Social Media</span>
       </div>
-      <div class="h1-cta" id="hero-cta">
-        <button class="bp mag-btn" data-goto="2">View My Work</button>
-        <button class="bo mag-btn" data-goto="6">Let's Work Together 🤝</button>
+      <div class="h1-cta">
+        <button class="bp" data-goto="2">View My Work</button>
+        <button class="bo" data-goto="6">Let's Work Together 🤝</button>
       </div>
     </div>
 
-    <!-- Floating badges -->
-    <div class="float-badge fb1" data-parallax="0.04">WordPress</div>
-    <div class="float-badge fb2" data-parallax="0.06">Photoshop</div>
-    <div class="float-badge fb3" data-parallax="0.03">CapCut</div>
-    <div class="float-badge fb4" data-parallax="0.05">HTML/CSS</div>
   </div>
 
   <!-- S2 ABOUT -->
@@ -137,7 +149,6 @@
     <div class="s-inner s2-grid">
 
       <div class="stg" style="display:flex;flex-direction:column;gap:14px;">
-        <!-- Discord card -->
         <div class="dc-card" id="dc-card">
           <div class="dc-banner">
             <div class="dc-banner-bg"></div>
@@ -191,7 +202,6 @@
         </div>
       </div>
 
-      <!-- RIGHT: Resume Panel -->
       <div class="resume-panel stg">
         <div class="res-header">
           <div>
@@ -208,7 +218,6 @@
             Full Resume
           </a>
         </div>
-
         <div class="res-sections">
           <div class="res-sec">
             <div class="res-sec-label">Experience</div>
@@ -284,7 +293,7 @@
               <div class="wc-b">
                 <div class="wc-tg"><span>Web Design</span><span>HTML/CSS</span><span>GHL</span></div>
                 <h3 class="wc-t">Website Sales Page</h3>
-                <p class="wc-d">Conversion-focused sales page with strategic flow, optimized visuals, and compelling CTAs designed to drive results.</p>
+                <p class="wc-d">Conversion-focused sales page with strategic flow, optimized visuals, and compelling CTAs.</p>
                 <a class="wc-lnk" href="https://crm.aiforbusiness.com/v2/preview/3cgkYzpnQHQcm1b4L8EN?notrack=true" target="_blank">View Live →</a>
               </div>
             </div>
@@ -293,7 +302,7 @@
               <div class="wc-b">
                 <div class="wc-tg"><span>WordPress</span><span>Elementor</span></div>
                 <h3 class="wc-t">Freedom Forge Mining</h3>
-                <p class="wc-d">Professional and conversion-focused WordPress site with Elementor and custom HTML/CSS enhancements.</p>
+                <p class="wc-d">Professional WordPress site with Elementor and custom HTML/CSS enhancements.</p>
                 <a class="wc-lnk" href="https://freedomforgemining.com/" target="_blank">View Live →</a>
               </div>
             </div>
@@ -302,7 +311,7 @@
               <div class="wc-b">
                 <div class="wc-tg"><span>WordPress</span><span>Kubio</span></div>
                 <h3 class="wc-t">ASIC Docs</h3>
-                <p class="wc-d">Streamlined one-page site with custom HTML/CSS focused on clear user flow and efficient repair request submissions.</p>
+                <p class="wc-d">Streamlined one-page site focused on clear user flow and repair request submissions.</p>
                 <a class="wc-lnk" href="https://asicdocs.com/" target="_blank">View Live →</a>
               </div>
             </div>
@@ -311,7 +320,7 @@
               <div class="wc-b">
                 <div class="wc-tg"><span>HTML/CSS</span><span>JavaScript</span></div>
                 <h3 class="wc-t">Law Firm Website</h3>
-                <p class="wc-d">Modern legal services website with a clean, responsive, and professional layout built from scratch.</p>
+                <p class="wc-d">Modern legal services website with clean, responsive, professional layout.</p>
                 <a class="wc-lnk" href="https://nopapersnofear.com/" target="_blank">View Live →</a>
               </div>
             </div>
@@ -320,7 +329,7 @@
               <div class="wc-b">
                 <div class="wc-tg"><span>HTML/CSS</span><span>JavaScript</span><span>Multi-lang</span></div>
                 <h3 class="wc-t">MyColima Tour Website</h3>
-                <p class="wc-d">Volunteer community platform for Tecomán, Colima, México. Features multilingual support (EN/ES/FR), program listings, property rentals, and a Gmail-integrated inquiry form.</p>
+                <p class="wc-d">Volunteer community platform for Tecomán, México. Multilingual (EN/ES/FR), program listings, and Gmail-integrated inquiry form.</p>
                 <a class="wc-lnk" href="https://mycolima.netlify.app/" target="_blank">View Live →</a>
               </div>
             </div>
@@ -329,7 +338,7 @@
               <div class="wc-b">
                 <div class="wc-tg"><span>HTML/CSS</span><span>JavaScript</span><span>Legal</span></div>
                 <h3 class="wc-t">Lawsuit Document Preparer</h3>
-                <p class="wc-d">Professional legal document preparation service in California. Clean, trust-focused layout with services overview, testimonials, and consultation request form.</p>
+                <p class="wc-d">Professional legal document preparation service in California with trust-focused layout and consultation form.</p>
                 <a class="wc-lnk" href="https://lawsuitdocumentpreparer.com/" target="_blank">View Live →</a>
               </div>
             </div>
@@ -363,10 +372,9 @@
           </div>
           <div class="cwc-body">
             <div class="cwc-title">Social Media Management</div>
-            <p class="cwc-desc">Full content calendar, graphics, captions, and scheduling for client brand accounts across Instagram, Facebook &amp; TikTok.</p>
+            <p class="cwc-desc">Full content calendar, graphics, captions, and scheduling across Instagram, Facebook &amp; TikTok.</p>
             <div class="cwc-tags"><span class="cwc-tag">Meta</span><span class="cwc-tag">Canva</span><span class="cwc-tag">Strategy</span></div>
-            <br>
-            <a class="wc-lnk" href="https://drive.google.com/drive/folders/1UQmPUQmhh6ryxEHsQqQ-sCqRyL0mOJRb?usp=drive_link" target="_blank">View Work →</a>
+            <br><a class="wc-lnk" href="https://drive.google.com/drive/folders/1UQmPUQmhh6ryxEHsQqQ-sCqRyL0mOJRb?usp=drive_link" target="_blank">View Work →</a>
           </div>
         </div>
         <div class="cwc" data-cat="brand">
@@ -378,25 +386,9 @@
           </div>
           <div class="cwc-body">
             <div class="cwc-title">Brand Style Guide</div>
-            <p class="cwc-desc">Complete brand identity system — logo usage, color palette, typography, tone of voice, and visual guidelines.</p>
+            <p class="cwc-desc">Complete brand identity — logo usage, color palette, typography, tone of voice, and visual guidelines.</p>
             <div class="cwc-tags"><span class="cwc-tag">Photoshop</span><span class="cwc-tag">Canva</span><span class="cwc-tag">Branding</span></div>
-            <br>
-            <a class="wc-lnk" href="https://drive.google.com/drive/folders/1XquI1Jr0Z-Y3qYAUfj_XzoyDyz5Jzeqy?usp=drive_link" target="_blank">View Work →</a>
-          </div>
-        </div>
-        <div class="cwc" data-cat="video">
-          <div class="cwc-img">
-            <canvas class="mc" data-h="320" data-h2="295"></canvas>
-            <div class="cwc-ov"></div>
-            <span class="cwc-ico">🎬</span>
-            <span class="cwc-cat video">Video</span>
-          </div>
-          <div class="cwc-body">
-            <div class="cwc-title">Reels &amp; Short-form Content</div>
-            <p class="cwc-desc">Edited short-form videos for Instagram Reels and TikTok — captions, transitions, sound sync, and motion text.</p>
-            <div class="cwc-tags"><span class="cwc-tag">CapCut</span><span class="cwc-tag">Premiere</span><span class="cwc-tag">Reels</span></div>
-            <br>
-            <a class="wc-lnk" href="https://drive.google.com/drive/folders/16czB5tPB9quLPhXYnPu6G6jMVp38kOny?usp=drive_link" target="_blank">View Work →</a>
+            <br><a class="wc-lnk" href="https://drive.google.com/drive/folders/1XquI1Jr0Z-Y3qYAUfj_XzoyDyz5Jzeqy?usp=drive_link" target="_blank">View Work →</a>
           </div>
         </div>
         <div class="cwc" data-cat="design">
@@ -408,10 +400,23 @@
           </div>
           <div class="cwc-body">
             <div class="cwc-title">Social Media Graphics</div>
-            <p class="cwc-desc">Custom-designed posts, stories, covers, and promotional banners tailored to each brand's aesthetic.</p>
+            <p class="cwc-desc">Custom posts, stories, covers, and promotional banners tailored to each brand's aesthetic.</p>
             <div class="cwc-tags"><span class="cwc-tag">Canva</span><span class="cwc-tag">Photoshop</span><span class="cwc-tag">Design</span></div>
-            <br>
-            <a class="wc-lnk" href="https://drive.google.com/drive/folders/1A1MJ82P_70ylRjRYm2Eb6BDaqurZmRH-?usp=drive_link" target="_blank">View Work →</a>
+            <br><a class="wc-lnk" href="https://drive.google.com/drive/folders/1A1MJ82P_70ylRjRYm2Eb6BDaqurZmRH-?usp=drive_link" target="_blank">View Work →</a>
+          </div>
+        </div>
+        <div class="cwc" data-cat="social">
+          <div class="cwc-img">
+            <canvas class="mc" data-h="320" data-h2="295"></canvas>
+            <div class="cwc-ov"></div>
+            <span class="cwc-ico">🎬</span>
+            <span class="cwc-cat video">Video</span>
+          </div>
+          <div class="cwc-body">
+            <div class="cwc-title">Reels &amp; Short-form Content</div>
+            <p class="cwc-desc">Edited short-form videos for Instagram Reels and TikTok — captions, transitions, sound sync, motion text.</p>
+            <div class="cwc-tags"><span class="cwc-tag">CapCut</span><span class="cwc-tag">Premiere</span><span class="cwc-tag">Reels</span></div>
+            <br><a class="wc-lnk" href="https://drive.google.com/drive/folders/16czB5tPB9quLPhXYnPu6G6jMVp38kOny?usp=drive_link" target="_blank">View Work →</a>
           </div>
         </div>
       </div>
@@ -431,12 +436,9 @@
           <span class="skc-ico">🌐</span>
           <div class="skc-t">Web Design &amp; Development</div>
           <ul class="sk-list">
-            <li>HTML / CSS / JavaScript</li>
-            <li>Responsive Web Design</li>
-            <li>WordPress / Elementor</li>
-            <li>GoHighLevel</li>
-            <li>UI / UX Design</li>
-            <li>Landing Pages</li>
+            <li>HTML / CSS / JavaScript</li><li>Responsive Web Design</li>
+            <li>WordPress / Elementor</li><li>GoHighLevel</li>
+            <li>UI / UX Design</li><li>Landing Pages</li>
           </ul>
         </div>
         <div class="skc mag-card" data-index="1">
@@ -444,12 +446,9 @@
           <span class="skc-ico">🎨</span>
           <div class="skc-t">Graphic Design &amp; Branding</div>
           <ul class="sk-list">
-            <li>Adobe Photoshop</li>
-            <li>Canva Pro</li>
-            <li>Brand Identity</li>
-            <li>Social Media Graphics</li>
-            <li>Marketing Materials</li>
-            <li>Content Design</li>
+            <li>Adobe Photoshop</li><li>Canva Pro</li>
+            <li>Brand Identity</li><li>Social Media Graphics</li>
+            <li>Marketing Materials</li><li>Content Design</li>
           </ul>
         </div>
         <div class="skc mag-card" data-index="2">
@@ -457,12 +456,9 @@
           <span class="skc-ico">🎬</span>
           <div class="skc-t">Video Editing &amp; Content</div>
           <ul class="sk-list">
-            <li>CapCut</li>
-            <li>DaVinci Resolve</li>
-            <li>Short-form Content</li>
-            <li>Reels Editing</li>
-            <li>Premiere Pro</li>
-            <li>Social Media Content</li>
+            <li>CapCut</li><li>DaVinci Resolve</li>
+            <li>Short-form Content</li><li>Reels Editing</li>
+            <li>Premiere Pro</li><li>Social Media Content</li>
           </ul>
         </div>
         <div class="skc mag-card" data-index="3">
@@ -470,12 +466,9 @@
           <span class="skc-ico">⚡</span>
           <div class="skc-t">Workflow &amp; Collaboration</div>
           <ul class="sk-list">
-            <li>Meta Business Suite</li>
-            <li>Google Workspace</li>
-            <li>Trello / ClickUp</li>
-            <li>Slack / WhatsApp</li>
-            <li>Content Scheduling</li>
-            <li>Administrative Support</li>
+            <li>Meta Business Suite</li><li>Google Workspace</li>
+            <li>Trello / ClickUp</li><li>Slack / WhatsApp</li>
+            <li>Content Scheduling</li><li>Administrative Support</li>
           </ul>
         </div>
       </div>
