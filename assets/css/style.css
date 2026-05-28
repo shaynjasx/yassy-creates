@@ -978,3 +978,69 @@ body.cur-hover .cur-ring {
 #loader {
   z-index: 999999;
 }
+
+/* ══════════════════════════
+   FOOTER / CT-MINI
+══════════════════════════ */
+.ct-mini {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 3;
+  padding: 10px 52px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(232,224,240,.18);
+  background: linear-gradient(to top, rgba(10,9,16,.85), transparent);
+  text-align: center;
+  pointer-events: none;
+}
+
+/* hide footer on mobile — too cramped */
+@media(max-width:768px){
+  .ct-mini { display: none; }
+}
+
+/* ══════════════════════════════════════════
+   HERO BUTTONS ALWAYS VISIBLE & CLICKABLE
+   Removes transform drift from hero content
+   so visual position = clickable hitbox
+══════════════════════════════════════════ */
+
+/* Lock hero content — never moves with parallax */
+#s1 .hero-content {
+  position: relative !important;
+  z-index: 20 !important;
+  pointer-events: auto !important;
+  /* prevent any GSAP transform from shifting it */
+  will-change: auto !important;
+}
+
+/* Buttons always on top and always clickable */
+#s1 .h1-cta {
+  position: relative;
+  z-index: 21 !important;
+  pointer-events: auto !important;
+}
+#s1 .h1-cta .bp,
+#s1 .h1-cta .bo {
+  position: relative;
+  z-index: 22 !important;
+  pointer-events: auto !important;
+  cursor: none;
+}
+
+/* Roles also always clickable */
+#s1 .h1-roles .role {
+  position: relative;
+  z-index: 21 !important;
+  pointer-events: auto !important;
+}
+
+/* Parallax layers are PURELY visual — nothing inside them is interactive */
+#s1 .px-layer,
+#s1 .px-layer * {
+  pointer-events: none !important;
+  z-index: 0 !important;
+}

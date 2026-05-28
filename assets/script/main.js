@@ -275,16 +275,34 @@ slides[0].classList.add('active');
 // =====================================================
 function initHeroEntrance() {
   // ── Cinematic entrance sequence ──
+  // Use fromTo instead of from so GSAP always
+  // ends at explicit opacity:1 — never leaves opacity:0 behind
   const tl = gsap.timeline({ delay: .12 });
 
-  tl.from('.h1-tag',         { opacity:0, y:22, duration:.7,  ease:'cinema' })
-    .from('.h1-name .solid', { opacity:0, y:32, duration:.78, ease:'cinema' }, '-=.4')
-    .from('.h1-name .ghost', { opacity:0, y:28, duration:.78, ease:'cinema' }, '-=.56')
-    .from('.role',           { opacity:0, y:16, scale:.96, duration:.55, stagger:.08, ease:'cinema' }, '-=.4')
-    .from('.h1-cta button',  { opacity:0, y:14, duration:.55, stagger:.1,  ease:'cinema' }, '-=.3')
-    .from('.px-badge',       { opacity:0, scale:.82, y:12, duration:.65, stagger:.1, ease:'cinema' }, '-=.55')
-    .from('.px-paw',         { opacity:0, duration:.8, stagger:.07, ease:'power2.out' }, '-=.4')
-    .from('#arr-down',       { opacity:0, y:8, duration:.5, ease:'power2.out' }, '-=.3');
+  tl.fromTo('.h1-tag',
+      { opacity:0, y:22 },
+      { opacity:1, y:0, duration:.7, ease:'cinema' })
+    .fromTo('.h1-name .solid',
+      { opacity:0, y:32 },
+      { opacity:1, y:0, duration:.78, ease:'cinema' }, '-=.4')
+    .fromTo('.h1-name .ghost',
+      { opacity:0, y:28 },
+      { opacity:1, y:0, duration:.78, ease:'cinema' }, '-=.56')
+    .fromTo('.role',
+      { opacity:0, y:16, scale:.96 },
+      { opacity:1, y:0, scale:1, duration:.55, stagger:.08, ease:'cinema' }, '-=.4')
+    .fromTo('.h1-cta button',
+      { opacity:0, y:14 },
+      { opacity:1, y:0, duration:.55, stagger:.1, ease:'cinema' }, '-=.3')
+    .fromTo('.px-badge',
+      { opacity:0, scale:.82, y:12 },
+      { opacity:1, scale:1, y:0, duration:.65, stagger:.1, ease:'cinema' }, '-=.55')
+    .fromTo('.px-paw',
+      { opacity:0 },
+      { opacity:1, duration:.8, stagger:.07, ease:'power2.out' }, '-=.4')
+    .fromTo('#arr-down',
+      { opacity:0, y:8 },
+      { opacity:1, y:0, duration:.5, ease:'power2.out' }, '-=.3');
 
   if (isMobile()) return;
 
@@ -315,16 +333,8 @@ function initHeroEntrance() {
       });
     });
 
-    // Hero content drifts very slightly — only visual, pointer events stay on original pos
-    // We use CSS transform so layout doesn't shift, keeping buttons clickable
-    const heroContent = document.querySelector('#s1 .hero-content');
-    if (heroContent) {
-      // Keep movement tiny so buttons remain under cursor
-      gsap.set(heroContent, {
-        x: lx * 8,
-        y: ly * 6,
-      });
-    }
+    // Hero content does NOT move — only the bg layers parallax
+    // This keeps all buttons exactly where they visually appear (no hitbox drift)
   });
 }
 
