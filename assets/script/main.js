@@ -1,7 +1,6 @@
 /* =====================================================
    YASSYCREATES — UPGRADED MOTION SYSTEM
    GSAP + CustomEase + Cinema-grade interactions
-   Preserves all original functionality
    ===================================================== */
 
 // ── SECURITY ──────────────────────────────────────────
@@ -20,27 +19,34 @@ CustomEase.create('exitEase', 'M0,0 C0.7,0 0.84,0.3 1,1');
 // ── MOBILE DETECTION ──────────────────────────────────
 const isMobile = () => window.innerWidth <= 768;
 
+// ── SHARED CAT POSITION VARS ──────────────────────────
+// Declared globally so both the cursor block
+// and the WebGL cat block can read/write them
+let mouseX2    = 0, mouseY2    = 0;
+let targetCatX = 0, targetCatY = 0;
+let currentCatX= 0, currentCatY= 0;
+
 // =====================================================
 // LOADER
 // =====================================================
 (function initLoader() {
-  const bar   = document.querySelector('.ld-bar');
-  const count = document.querySelector('.ld-count');
+  const bar    = document.querySelector('.ld-bar');
+  const count  = document.querySelector('.ld-count');
   const loader = document.getElementById('loader');
+  if(!loader) { initHeroEntrance(); return; }
   let p = 0;
 
   const tick = setInterval(() => {
     p += Math.random() * 18 + 4;
     if (p >= 100) { p = 100; clearInterval(tick); }
     const v = Math.floor(p);
-    bar.style.width = v + '%';
-    count.textContent = String(v).padStart(2,'0');
+    if(bar)   bar.style.width   = v + '%';
+    if(count) count.textContent = String(v).padStart(2,'0');
 
     if (p >= 100) {
       setTimeout(() => {
         gsap.to(loader, {
-          opacity: 0, duration: .55,
-          ease: 'power2.inOut',
+          opacity: 0, duration: .55, ease: 'power2.inOut',
           onComplete: () => {
             loader.classList.add('out');
             initHeroEntrance();
@@ -52,31 +58,25 @@ const isMobile = () => window.innerWidth <= 768;
 })();
 
 // =====================================================
-// GRAIN CANVAS (film grain overlay)
+// GRAIN CANVAS
 // =====================================================
 (function initGrain() {
-  const cv  = document.getElementById('grain');
+  const cv = document.getElementById('grain');
   if (!cv) return;
   const ctx = cv.getContext('2d');
   let W, H;
-
-  const resize = () => {
-    W = cv.width  = window.innerWidth;
-    H = cv.height = window.innerHeight;
-  };
+  const resize = () => { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; };
   window.addEventListener('resize', resize); resize();
-
   let frame = 0;
   function drawGrain() {
     frame++;
-    // Redraw grain every 2 frames for performance
     if (frame % 2 === 0) {
       const imageData = ctx.createImageData(W, H);
       const data = imageData.data;
       for (let i = 0; i < data.length; i += 4) {
         const v = Math.random() * 255 | 0;
         data[i] = data[i+1] = data[i+2] = v;
-        data[i+3] = 18; // very subtle alpha
+        data[i+3] = 18;
       }
       ctx.putImageData(imageData, 0, 0);
     }
@@ -90,37 +90,40 @@ const isMobile = () => window.innerWidth <= 768;
 // =====================================================
 const CUR = (() => {
   const el   = document.getElementById('cur');
+  if(!el) return { setLabel: () => {} };
   const dot  = el.querySelector('.cur-dot');
   const ring = el.querySelector('.cur-ring');
   const txt  = el.querySelector('.cur-text');
 
   let mx = 0, my = 0;
-  let ox = 0, oy = 0;
   let rx = 0, ry = 0;
 
   document.addEventListener('mousemove', e => {
     mx = e.clientX; my = e.clientY;
-    gsap.set(dot, { x: mx, y: my });
+
+    // Update shared cat position vars
+    mouseX2    = (e.clientX / window.innerWidth  - .5) * .5;
+    mouseY2    = (e.clientY / window.innerHeight - .5) * .35;
+    targetCatX = (e.clientX / window.innerWidth  - .5) * 0.9;
+    targetCatY = (e.clientY / window.innerHeight - .5) * 0.55;
+
+    if(dot) gsap.set(dot, { x: mx, y: my });
+    if(txt) gsap.set(txt, { x: mx + 18, y: my - 8 });
   });
 
-  // Ring follows with lag (GSAP ticker for smooth interpolation)
+  // Ring follows with lag
   gsap.ticker.add(() => {
-    ox += (mx - ox) * .092;
-    oy += (my - oy) * .092;
     rx += (mx - rx) * .072;
     ry += (my - ry) * .072;
-    gsap.set(ring, { x: rx, y: ry });
+    if(ring) gsap.set(ring, { x: rx, y: ry });
   });
 
   function setLabel(label) {
-    if (label) {
-      txt.textContent = label;
-      gsap.set(txt, { x: mx + 18, y: my - 8 });
-    }
+    if (!txt) return;
+    if (label) txt.textContent = label;
     gsap.to(txt, { opacity: label ? 1 : 0, duration: .25 });
   }
 
-  // Hover state for interactive elements
   document.querySelectorAll(
     'a,button,.sdot,.pill,.stb,.wcard,.cwc,.role,.skc,.ct-link,.wc-arrow,.mag-btn'
   ).forEach(el => {
@@ -182,11 +185,9 @@ function updateUI(idx) {
       }
     });
   }
-  nav.classList.toggle('solid', idx > 0);
+  if(nav) nav.classList.toggle('solid', idx > 0);
   const arrDown = document.getElementById('arr-down');
-  if (arrDown) {
-    gsap.to(arrDown, { opacity: idx === TOTAL-1 ? 0 : 1, duration: .4 });
-  }
+  if (arrDown) gsap.to(arrDown, { opacity: idx === TOTAL-1 ? 0 : 1, duration: .4 });
 }
 
 function goTo(idx, dir) {
@@ -204,19 +205,13 @@ function goTo(idx, dir) {
   const fromSlide = slides[cur_s];
   const toSlide   = slides[idx];
 
-  // Exit animation
   gsap.to(fromSlide, {
-    opacity: 0,
-    y: goingDown ? -55 : 55,
-    scale: .97,
-    duration: .62,
-    ease: 'exitEase',
+    opacity: 0, y: goingDown ? -55 : 55, scale: .97,
+    duration: .62, ease: 'exitEase',
     onComplete: () => {
       fromSlide.classList.remove('active');
-      fromSlide.style.cssText = '';
       gsap.set(fromSlide, { clearProps: 'all' });
 
-      // Enter animation
       gsap.fromTo(toSlide,
         { opacity: 0, y: goingDown ? 60 : -60, scale: .985, rotateX: goingDown ? 1.5 : -1.5 },
         {
@@ -224,7 +219,7 @@ function goTo(idx, dir) {
           duration: .88, ease: 'cinema',
           onStart: () => toSlide.classList.add('active'),
           onComplete: () => {
-            if (idx === 4) triggerCountUp();
+            if (idx === 5) triggerCountUp();
             document.querySelectorAll('.mc').forEach(cv => { if (cv._resize) cv._resize(); });
             cur_s = idx;
             updateUI(idx);
@@ -236,7 +231,7 @@ function goTo(idx, dir) {
   });
 }
 
-// Scroll
+// Scroll / wheel
 window.addEventListener('wheel', e => {
   if (isMobile()) return;
   const now = Date.now();
@@ -245,7 +240,7 @@ window.addEventListener('wheel', e => {
   e.deltaY > 0 ? goTo(cur_s + 1, true) : goTo(cur_s - 1, false);
 }, { passive: true });
 
-// Touch swipe (desktop)
+// Touch swipe (desktop only)
 let tsy = 0;
 window.addEventListener('touchstart', e => { tsy = e.touches[0].clientY; }, { passive: true });
 window.addEventListener('touchend', e => {
@@ -261,7 +256,7 @@ window.addEventListener('keydown', e => {
   if (e.key === 'ArrowUp'   || e.key === 'PageUp')   goTo(cur_s - 1, false);
 });
 
-// Data-goto handler
+// Data-goto universal handler
 document.querySelectorAll('[data-goto]').forEach(el => {
   el.addEventListener('click', function(e) {
     e.preventDefault();
@@ -271,52 +266,34 @@ document.querySelectorAll('[data-goto]').forEach(el => {
   });
 });
 
-// Init
+// Init first slide
 updateUI(0);
 slides[0].classList.add('active');
 
 // =====================================================
-// HERO ENTRANCE (cinematic sequence)
+// HERO ENTRANCE
 // =====================================================
 function initHeroEntrance() {
   const tl = gsap.timeline({ delay: .1 });
-
-  // Stagger the hero eyebrow, title, roles, cta
-  tl.from('.hero-eyebrow', { opacity: 0, y: 22, duration: .7, ease: 'cinema' })
-    .from('.h1-name .solid', { opacity: 0, y: 30, duration: .75, ease: 'cinema' }, '-=.4')
-    .from('.h1-name .ghost', { opacity: 0, y: 28, duration: .75, ease: 'cinema' }, '-=.55')
-    .from('.role', {
-      opacity: 0, y: 16, scale: .96,
-      duration: .55, stagger: .08, ease: 'cinema'
-    }, '-=.4')
-    .from('.h1-cta button', {
-      opacity: 0, y: 14,
-      duration: .55, stagger: .1, ease: 'cinema'
-    }, '-=.3')
-    .from('.float-badge', {
-      opacity: 0, scale: .85,
-      duration: .6, stagger: .12, ease: 'cinema'
-    }, '-=.5')
+  tl.from('.h1-tag',          { opacity: 0, y: 22, duration: .7,  ease: 'cinema' })
+    .from('.h1-name .solid',  { opacity: 0, y: 30, duration: .75, ease: 'cinema' }, '-=.4')
+    .from('.h1-name .ghost',  { opacity: 0, y: 28, duration: .75, ease: 'cinema' }, '-=.55')
+    .from('.role', { opacity: 0, y: 16, scale: .96, duration: .55, stagger: .08, ease: 'cinema' }, '-=.4')
+    .from('.h1-cta button', { opacity: 0, y: 14, duration: .55, stagger: .1, ease: 'cinema' }, '-=.3')
+    .from('.float-badge', { opacity: 0, scale: .85, duration: .6, stagger: .12, ease: 'cinema' }, '-=.5')
     .from('#arr-down', { opacity: 0, y: 8, duration: .5, ease: 'power2.out' }, '-=.3');
 
-  // Floating badges parallax on mouse move
   if (!isMobile()) {
     document.addEventListener('mousemove', (e) => {
       const cx = window.innerWidth / 2;
       const cy = window.innerHeight / 2;
       const dx = (e.clientX - cx) / cx;
       const dy = (e.clientY - cy) / cy;
-
       document.querySelectorAll('.float-badge').forEach(b => {
         const s = parseFloat(b.dataset.parallax || '.04');
         gsap.to(b, { x: dx * s * 80, y: dy * s * 60, duration: 1.2, ease: 'power2.out' });
       });
-
-      // Hero title subtle parallax
-      gsap.to('.hero-bg-layer', {
-        x: dx * -18, y: dy * -12,
-        duration: 1.4, ease: 'power2.out'
-      });
+      gsap.to('.hero-bg-layer', { x: dx * -18, y: dy * -12, duration: 1.4, ease: 'power2.out' });
     });
   }
 }
@@ -343,7 +320,7 @@ document.addEventListener('click', e => {
   if (!mobMenu.contains(e.target) && !menuBtn.contains(e.target)) closeMobileMenu();
 });
 
-// Mobile scroll dot updater
+// Mobile scroll → update dot nav
 window.addEventListener('scroll', () => {
   if (!isMobile()) return;
   const ids = ['s1','s2','s3','s3b','s4','s5','s6'];
@@ -358,16 +335,15 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 // =====================================================
-// MAGNETIC SYSTEM (buttons + cards)
+// MAGNETIC BUTTONS
 // =====================================================
 (function initMagnetics() {
-  // Buttons
-  document.querySelectorAll('.mag-btn').forEach(b => {
+  document.querySelectorAll('.mag-btn,.bp,.bo').forEach(b => {
     b.addEventListener('mousemove', e => {
       if (isMobile()) return;
       const r = b.getBoundingClientRect();
-      const x = (e.clientX - r.left - r.width / 2) * .22;
-      const y = (e.clientY - r.top - r.height / 2) * .22;
+      const x = (e.clientX - r.left - r.width  / 2) * .22;
+      const y = (e.clientY - r.top  - r.height / 2) * .22;
       gsap.to(b, { x, y, duration: .4, ease: 'power2.out' });
     });
     b.addEventListener('mouseleave', () => {
@@ -377,51 +353,43 @@ window.addEventListener('scroll', () => {
 })();
 
 // =====================================================
-// ADVANCED 3D CARD TILT (physics-spring)
+// 3D CARD TILT
 // =====================================================
 (function initTilt() {
-  const tiltEls = document.querySelectorAll('.wcard,.skc,.cwc');
-  tiltEls.forEach(c => {
+  document.querySelectorAll('.wcard,.skc,.cwc').forEach(c => {
     c.addEventListener('mousemove', e => {
       if (isMobile()) return;
       const r = c.getBoundingClientRect();
       const x = (e.clientX - r.left) / r.width  - .5;
       const y = (e.clientY - r.top)  / r.height - .5;
-
-      // Spotlight effect
       const glow = c.querySelector('.skc-glow');
       if (glow) {
         const px = ((e.clientX - r.left) / r.width  * 100).toFixed(1);
         const py = ((e.clientY - r.top)  / r.height * 100).toFixed(1);
-        gsap.to(glow, { background: `radial-gradient(circle at ${px}% ${py}%, rgba(201,127,168,.1) 0%, transparent 55%)`, duration: .15, opacity: 1 });
+        gsap.to(glow, {
+          background: `radial-gradient(circle at ${px}% ${py}%, rgba(201,127,168,.1) 0%, transparent 55%)`,
+          duration: .15, opacity: 1
+        });
       }
-
       gsap.to(c, {
-        rotateX: -y * 10,
-        rotateY: x * 10,
-        translateY: -8,
-        scale: 1.005,
-        duration: .22,
-        ease: 'power2.out',
-        transformPerspective: 900
+        rotateX: -y * 10, rotateY: x * 10,
+        translateY: -8, scale: 1.005,
+        duration: .22, ease: 'power2.out', transformPerspective: 900
       });
     });
     c.addEventListener('mouseleave', () => {
       const glow = c.querySelector('.skc-glow');
       if (glow) gsap.to(glow, { opacity: 0, duration: .4 });
       gsap.to(c, {
-        rotateX: 0, rotateY: 0,
-        translateY: 0, scale: 1,
-        duration: .65,
-        ease: 'elastic.out(1,.4)',
-        transformPerspective: 900
+        rotateX: 0, rotateY: 0, translateY: 0, scale: 1,
+        duration: .65, ease: 'elastic.out(1,.4)', transformPerspective: 900
       });
     });
   });
 })();
 
 // =====================================================
-// COUNT-UP ANIMATION
+// COUNT-UP
 // =====================================================
 let counted = false;
 function triggerCountUp() {
@@ -430,27 +398,17 @@ function triggerCountUp() {
   document.querySelectorAll('.stb-n[data-n]').forEach(el => {
     const tgt  = +el.dataset.n;
     const plus = el.dataset.plus === 'true';
-    gsap.from({ v: 0 }, {
-      v: tgt, duration: 2.2, ease: 'power2.out',
-      onUpdate: function() {
-        el.textContent = Math.floor(this.targets()[0].v) + (plus ? '+' : '');
-      },
-      onComplete: () => {
-        el.textContent = tgt + (plus ? '+' : '');
-      }
-    });
-    // Actually use gsap.to on the value
-    const obj = { v: 0 };
+    const obj  = { v: 0 };
     gsap.to(obj, {
       v: tgt, duration: 2.2, ease: 'power2.out',
-      onUpdate: () => { el.textContent = Math.floor(obj.v) + (plus ? '+' : ''); },
-      onComplete: () => { el.textContent = tgt + (plus ? '+' : ''); }
+      onUpdate:  () => { el.textContent = Math.floor(obj.v) + (plus ? '+' : ''); },
+      onComplete:() => { el.textContent = tgt + (plus ? '+' : ''); }
     });
   });
 }
 
 // =====================================================
-// MINI CANVASES (animated particle backgrounds)
+// MINI CANVASES
 // =====================================================
 const pals = [
   ['#c97fa8','#9b7bc4'],
@@ -463,57 +421,42 @@ document.querySelectorAll('.mc').forEach((cv, idx) => {
   const ctx = cv.getContext('2d');
   const pal = pals[idx % pals.length];
   let W, H;
-
   const resize = cv._resize = () => {
     W = cv.width  = cv.offsetWidth  || 280;
     H = cv.height = cv.offsetHeight || 160;
   };
   resize();
   new ResizeObserver(resize).observe(cv.parentElement);
-
   const h2r = h => {
     const c = h.replace('#','');
     return [parseInt(c.slice(0,2),16), parseInt(c.slice(2,4),16), parseInt(c.slice(4,6),16)];
   };
-
   const pts = Array.from({ length: 38 }, () => ({
     x: Math.random(), y: Math.random(),
     vx: (Math.random()-.5)*.0028, vy: (Math.random()-.5)*.0028,
-    r: Math.random()*2.4+.4,
-    ph: Math.random()*Math.PI*2,
+    r: Math.random()*2.4+.4, ph: Math.random()*Math.PI*2,
     col: pal[Math.floor(Math.random()*pal.length)]
   }));
-
   let t = 0;
   (function loop() {
     ctx.clearRect(0,0,W,H);
-    ctx.fillStyle = '#0a0910';
-    ctx.fillRect(0,0,W,H);
-
+    ctx.fillStyle = '#0a0910'; ctx.fillRect(0,0,W,H);
     const [r0,g0,b0] = h2r(pal[0]);
     const bl = ctx.createRadialGradient(W*.5,H*.5,0,W*.5,H*.5,W*.55);
-    bl.addColorStop(0,`rgba(${r0},${g0},${b0},.05)`);
-    bl.addColorStop(1,'transparent');
-    ctx.fillStyle = bl;
-    ctx.fillRect(0,0,W,H);
-
+    bl.addColorStop(0,`rgba(${r0},${g0},${b0},.05)`); bl.addColorStop(1,'transparent');
+    ctx.fillStyle = bl; ctx.fillRect(0,0,W,H);
     t += .0065;
     pts.forEach(p => {
       p.x += p.vx + Math.sin(t+p.ph)*.00045;
       p.y += p.vy + Math.cos(t+p.ph)*.00045;
       if(p.x<0)p.x=1; if(p.x>1)p.x=0;
       if(p.y<0)p.y=1; if(p.y>1)p.y=0;
-
-      const a  = .15 + .14*Math.sin(t*1.3+p.ph);
+      const a = .15 + .14*Math.sin(t*1.3+p.ph);
       const px = p.x*W, py = p.y*H;
       const [r,g,b] = h2r(p.col);
-
       const g2 = ctx.createRadialGradient(px,py,0,px,py,p.r*5.5);
-      g2.addColorStop(0,`rgba(${r},${g},${b},${a*.44})`);
-      g2.addColorStop(1,'transparent');
-      ctx.fillStyle = g2;
-      ctx.beginPath(); ctx.arc(px,py,p.r*5.5,0,Math.PI*2); ctx.fill();
-
+      g2.addColorStop(0,`rgba(${r},${g},${b},${a*.44})`); g2.addColorStop(1,'transparent');
+      ctx.fillStyle = g2; ctx.beginPath(); ctx.arc(px,py,p.r*5.5,0,Math.PI*2); ctx.fill();
       ctx.beginPath(); ctx.arc(px,py,p.r,0,Math.PI*2);
       ctx.fillStyle = `rgba(${r},${g},${b},${a*.78})`; ctx.fill();
     });
@@ -523,6 +466,8 @@ document.querySelectorAll('.mc').forEach((cv, idx) => {
 
 // =====================================================
 // 3D LOW-POLY CAT (WebGL)
+// Cat follows mouse — uses global mouseX2/mouseY2
+// and targetCatX/Y for smooth position shift
 // =====================================================
 (function() {
   const cv = document.getElementById('c3d');
@@ -544,7 +489,7 @@ document.querySelectorAll('.mc').forEach((cv, idx) => {
   const prog2=gl.createProgram();
   gl.attachShader(prog2,mkSh(gl.VERTEX_SHADER,VS));
   gl.attachShader(prog2,mkSh(gl.FRAGMENT_SHADER,FS));
-  gl.linkProgram(prog2);gl.useProgram(prog2);
+  gl.linkProgram(prog2); gl.useProgram(prog2);
 
   const BODY=[.32,.22,.30],BODY2=[.28,.19,.26],HEAD=[.38,.26,.34],HEAD2=[.34,.23,.30],
         EAR=[.42,.28,.36],EAR_IN=[.62,.40,.52],TAIL=[.30,.20,.28],PAW=[.36,.24,.32],
@@ -586,6 +531,7 @@ document.querySelectorAll('.mc').forEach((cv, idx) => {
     const a=hv(t0,PHI[pi]),b=hv(t1,PHI[pi]),c=hv(t1,PHI[pi+1]),d=hv(t0,PHI[pi+1]);
     quad(a,b,c,d,pi%2===0?HEAD:HEAD2);
   }
+
   function ear(sx){
     const bl=[HCX+sx*.14,HCY+HR*.75,HCZ+HR*.2],br=[HCX+sx*.34,HCY+HR*.65,HCZ+HR*.1],tip=[HCX+sx*.26,HCY+HR*1.38,HCZ+HR*.1];
     tri(bl,br,tip,EAR);
@@ -594,31 +540,44 @@ document.querySelectorAll('.mc').forEach((cv, idx) => {
     const bbl=[HCX+sx*.12,HCY+HR*.72,HCZ-HR*.12],bbr=[HCX+sx*.32,HCY+HR*.62,HCZ-HR*.1];
     tri(bbl,tip,bbr,EAR);tri(bl,tip,bbl,EAR);
   }
-  ear(1);ear(-1);
+  ear(1); ear(-1);
+
   tri([-.055,HCY-.055,HCZ+HR*.92],[.055,HCY-.055,HCZ+HR*.92],[0,HCY+.01,HCZ+HR*.94],NOSE);
   function eye(sx){const ex=sx*.16,ey=HCY+.08,ez=HCZ+HR*.88,s=.065;quad([ex-s*1.4,ey+s*.6,ez],[ex+s*1.4,ey+s*.6,ez],[ex+s*1.2,ey-s*.6,ez],[ex-s*1.2,ey-s*.6,ez],EYE);}
-  eye(1);eye(-1);
+  eye(1); eye(-1);
+
   [[[ .38,-.72,.00],[.40,-.72,-.12],[.44,-.55,-.16],[.44,-.55,-.04]],
    [[ .44,-.55,-.16],[.52,-.55,-.20],[.58,-.36,-.22],[.54,-.36,-.14]],
    [[ .58,-.36,-.22],[.64,-.36,-.20],[.66,-.18,-.16],[.60,-.18,-.13]],
    [[ .66,-.18,-.16],[.68,-.18,-.10],[.66,.02,-.06],[.60,.02,-.08]],
    [[ .66,.02,-.06],[.68,.02,.02],[.60,.18,.06],[.55,.18,-.02]]
   ].forEach((s,i)=>{quad(s[0],s[1],s[3],s[2],i%2===0?TAIL:BODY2);if(i===4)tri(s[2],s[3],[.58,.28,.02],PAW);});
+
   function paw(sx){
     const px=sx*.26,py=-.72,pz=.32,w=.12,d=.10,h=.08;
     const fl=[px-w,py,pz+d],fr=[px+w,py,pz+d],bl2=[px-w,py,pz-d],br2=[px+w,py,pz-d];
     const tl=[px-w,py+h,pz+d],tr2=[px+w,py+h,pz+d],btl=[px-w,py+h,pz-d],btr=[px+w,py+h,pz-d];
-    quad(fl,fr,tr2,tl,PAW);quad(br2,bl2,btl,btr,PAW);quad(bl2,fl,tl,btl,PAW);quad(fr,br2,btr,tr2,PAW);quad(tl,tr2,btr,btl,BODY);quad(bl2,br2,fr,fl,PAW);
+    quad(fl,fr,tr2,tl,PAW);quad(br2,bl2,btl,btr,PAW);quad(bl2,fl,tl,btl,PAW);
+    quad(fr,br2,btr,tr2,PAW);quad(tl,tr2,btr,btl,BODY);quad(bl2,br2,fr,fl,PAW);
   }
-  paw(1);paw(-1);
+  paw(1); paw(-1);
 
   const posA=[],normA=[],colA=[],idxA=[];
-  tris.forEach((t,i)=>{t.verts.forEach(v=>{posA.push(...v);normA.push(...t.n);colA.push(...t.col);});const b=i*3;idxA.push(b,b+1,b+2);});
+  tris.forEach((t,i)=>{
+    t.verts.forEach(v=>{posA.push(...v);normA.push(...t.n);colA.push(...t.col);});
+    const b=i*3; idxA.push(b,b+1,b+2);
+  });
 
   function mkB(type,data){const b=gl.createBuffer();gl.bindBuffer(type,b);gl.bufferData(type,data,gl.STATIC_DRAW);return b;}
-  const vb=mkB(gl.ARRAY_BUFFER,new Float32Array(posA)),nb=mkB(gl.ARRAY_BUFFER,new Float32Array(normA)),cb=mkB(gl.ARRAY_BUFFER,new Float32Array(colA)),ib=mkB(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(idxA));
-  const aP=gl.getAttribLocation(prog2,'aP'),aN=gl.getAttribLocation(prog2,'aN'),aC=gl.getAttribLocation(prog2,'aC');
-  const uMVP=gl.getUniformLocation(prog2,'uMVP'),uM=gl.getUniformLocation(prog2,'uM'),uCam=gl.getUniformLocation(prog2,'uCam'),uSlide=gl.getUniformLocation(prog2,'uSlide');
+  const vb=mkB(gl.ARRAY_BUFFER,new Float32Array(posA));
+  const nb=mkB(gl.ARRAY_BUFFER,new Float32Array(normA));
+  const cb=mkB(gl.ARRAY_BUFFER,new Float32Array(colA));
+  const ib=mkB(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(idxA));
+
+  const aP=gl.getAttribLocation(prog2,'aP'),aN2=gl.getAttribLocation(prog2,'aN'),aC=gl.getAttribLocation(prog2,'aC');
+  const uMVP=gl.getUniformLocation(prog2,'uMVP'),uM=gl.getUniformLocation(prog2,'uM');
+  const uCam=gl.getUniformLocation(prog2,'uCam'),uSlide=gl.getUniformLocation(prog2,'uSlide');
+
   const m4=()=>new Float32Array(16);
   const id=m=>{for(let i=0;i<16;i++)m[i]=0;m[0]=m[5]=m[10]=m[15]=1;return m;};
   const mul=(a,b)=>{const c=m4();for(let i=0;i<4;i++)for(let j=0;j<4;j++){let s=0;for(let k=0;k<4;k++)s+=a[i+k*4]*b[k+j*4];c[i+j*4]=s;}return c;};
@@ -627,31 +586,53 @@ document.querySelectorAll('.mc').forEach((cv, idx) => {
   const rX=a=>{const m=m4();id(m);m[5]=Math.cos(a);m[6]=-Math.sin(a);m[9]=Math.sin(a);m[10]=Math.cos(a);return m;};
   const tr2=(x,y,z)=>{const m=m4();id(m);m[12]=x;m[13]=y;m[14]=z;return m;};
   const sc=s=>{const m=m4();id(m);m[0]=m[5]=m[10]=s;return m;};
-  let targetRot=0,currentRot=0,autoT=0,mouseX2=0,mouseY2=0,catMX=0,catMY=0,lastSlide2=0;
+
+  // Slide rotation angles — one per slide
   const slideAngles=[0,Math.PI*.4,Math.PI*.9,Math.PI*1.4,Math.PI*1.9,Math.PI*2.5,Math.PI*3.2];
-  setInterval(()=>{if(cur_s!==lastSlide2){targetRot=slideAngles[cur_s];lastSlide2=cur_s;}},100);
-  document.addEventListener('mousemove',e=>{mouseX2=(e.clientX/window.innerWidth-.5)*.5;mouseY2=(e.clientY/window.innerHeight-.5)*.35;});
-  gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+  let targetRot=0, currentRot=0, autoT=0, catMX=0, catMY=0, lastSlide2=0;
+
+  setInterval(()=>{
+    if(cur_s !== lastSlide2){ targetRot=slideAngles[cur_s]; lastSlide2=cur_s; }
+  },100);
+
+  gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
   gl.enable(gl.DEPTH_TEST);
+
   (function frame(){
-    autoT+=.0065;
-    currentRot+=(targetRot-currentRot)*.038;
-    catMX+=(mouseX2-catMX)*.038;catMY+=(mouseY2-catMY)*.038;
-    gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-    const bob=Math.sin(autoT*.6)*.04;
-    let model=sc(.60);
-    model=mul(rX(.08+catMY*.5+Math.sin(autoT*.35)*.014),model);
-    model=mul(rY(currentRot+catMX+autoT*.09),model);
-    model=mul(tr2(0,bob-.06,0),model);
-    const camZ=3.8;
-    const mvp=mul(mul(persp(1.05,W/H,.1,50),tr2(0,0,-camZ)),model);
-    gl.uniformMatrix4fv(uMVP,false,mvp);gl.uniformMatrix4fv(uM,false,model);
-    gl.uniform3f(uCam,0,0,camZ);gl.uniform1f(uSlide,cur_s);
-    gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.enableVertexAttribArray(aP);gl.vertexAttribPointer(aP,3,gl.FLOAT,false,0,0);
-    gl.bindBuffer(gl.ARRAY_BUFFER,nb);gl.enableVertexAttribArray(aN);gl.vertexAttribPointer(aN,3,gl.FLOAT,false,0,0);
-    gl.bindBuffer(gl.ARRAY_BUFFER,cb);gl.enableVertexAttribArray(aC);gl.vertexAttribPointer(aC,3,gl.FLOAT,false,0,0);
+    autoT += .0065;
+
+    // Smooth lerp all values
+    currentRot  += (targetRot  - currentRot)  * .038;
+    catMX       += (mouseX2    - catMX)        * .038;
+    catMY       += (mouseY2    - catMY)        * .038;
+    currentCatX += (targetCatX - currentCatX)  * .035; // smooth position follow
+    currentCatY += (targetCatY - currentCatY)  * .035;
+
+    gl.clearColor(0,0,0,0);
+    gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+
+    const bob = Math.sin(autoT*.6)*.04;
+
+    let model = sc(.60);
+    model = mul(rX(.08 + catMY*.5 + Math.sin(autoT*.35)*.014), model);
+    model = mul(rY(currentRot + catMX + autoT*.09), model);
+    // position: follows mouse left/right/up/down
+    model = mul(tr2(currentCatX, bob - .06 - currentCatY, 0), model);
+
+    const camZ = 3.8;
+    const mvp  = mul(mul(persp(1.05,W/H,.1,50), tr2(0,0,-camZ)), model);
+
+    gl.uniformMatrix4fv(uMVP,false,mvp);
+    gl.uniformMatrix4fv(uM,false,model);
+    gl.uniform3f(uCam,0,0,camZ);
+    gl.uniform1f(uSlide,cur_s);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER,vb); gl.enableVertexAttribArray(aP); gl.vertexAttribPointer(aP,3,gl.FLOAT,false,0,0);
+    gl.bindBuffer(gl.ARRAY_BUFFER,nb); gl.enableVertexAttribArray(aN2);gl.vertexAttribPointer(aN2,3,gl.FLOAT,false,0,0);
+    gl.bindBuffer(gl.ARRAY_BUFFER,cb); gl.enableVertexAttribArray(aC); gl.vertexAttribPointer(aC,3,gl.FLOAT,false,0,0);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);
     gl.drawElements(gl.TRIANGLES,idxA.length,gl.UNSIGNED_SHORT,0);
+
     requestAnimationFrame(frame);
   })();
 })();
@@ -660,19 +641,20 @@ document.querySelectorAll('.mc').forEach((cv, idx) => {
 // STARFIELD BACKGROUND
 // =====================================================
 (function() {
-  const cv=document.createElement('canvas');
-  cv.style.cssText='position:fixed;inset:0;z-index:0;pointer-events:none;';
+  const cv  = document.createElement('canvas');
+  cv.style.cssText = 'position:fixed;inset:0;z-index:0;pointer-events:none;';
   document.body.prepend(cv);
-  const ctx=cv.getContext('2d');
-  let W,H;
-  const resize=()=>{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;};
-  window.addEventListener('resize',resize);resize();
-  const orbs=[
+  const ctx = cv.getContext('2d');
+  let W, H;
+  const resize = () => { W=cv.width=window.innerWidth; H=cv.height=window.innerHeight; };
+  window.addEventListener('resize',resize); resize();
+
+  const orbs = [
     {x:.14,y:.22,rw:320,rh:240,h:340,a:.038,dx:.00009,dy:.00007},
     {x:.84,y:.68,rw:275,rh:210,h:280,a:.030,dx:-.00008,dy:.00008},
     {x:.5, y:.5, rw:400,rh:300,h:300,a:.02, dx:.00006,dy:-.00007}
   ];
-  const stars=Array.from({length:130},()=>({
+  const stars = Array.from({length:130},()=>({
     x:Math.random(),y:Math.random(),
     r:Math.random()*.85+.1,
     a:Math.random()*.28+.03,
@@ -681,25 +663,24 @@ document.querySelectorAll('.mc').forEach((cv, idx) => {
   let t=0;
   (function draw(){
     ctx.clearRect(0,0,W,H);
-    ctx.fillStyle='#0a0910';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#0a0910'; ctx.fillRect(0,0,W,H);
     orbs.forEach(o=>{
-      o.x+=o.dx;o.y+=o.dy;
+      o.x+=o.dx; o.y+=o.dy;
       if(o.x<-.3||o.x>1.3)o.dx*=-1;
       if(o.y<-.3||o.y>1.3)o.dy*=-1;
-      const cx=o.x*W,cy=o.y*H;
-      ctx.save();ctx.scale(1,o.rh/o.rw);
+      const cx=o.x*W, cy=o.y*H;
+      ctx.save(); ctx.scale(1,o.rh/o.rw);
       const g=ctx.createRadialGradient(cx,cy*o.rw/o.rh,0,cx,cy*o.rw/o.rh,o.rw);
-      g.addColorStop(0,`hsla(${o.h},28%,28%,${o.a})`);
-      g.addColorStop(1,'transparent');
-      ctx.fillStyle=g;ctx.fillRect(0,0,W,H*o.rw/o.rh);ctx.restore();
+      g.addColorStop(0,`hsla(${o.h},28%,28%,${o.a})`); g.addColorStop(1,'transparent');
+      ctx.fillStyle=g; ctx.fillRect(0,0,W,H*o.rw/o.rh); ctx.restore();
     });
     t+=.0038;
     stars.forEach((s,i)=>{
       s.a+=s.da;
-      if(s.a>.36)s.da*=-1;if(s.a<.018)s.da*=-1;
+      if(s.a>.36)s.da*=-1; if(s.a<.018)s.da*=-1;
       const tw=.5+.5*Math.sin(t+i*.52);
-      ctx.beginPath();ctx.arc(s.x*W,s.y*H,s.r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(210,200,228,${s.a*tw*.48})`;ctx.fill();
+      ctx.beginPath(); ctx.arc(s.x*W,s.y*H,s.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(210,200,228,${s.a*tw*.48})`; ctx.fill();
     });
     requestAnimationFrame(draw);
   })();
@@ -835,40 +816,32 @@ document.querySelectorAll('.ct-main-btn').forEach(btn => {
     return 1;
   }
   function maxIndex() { return Math.max(0, COUNT - visibleCount()); }
-  function stepPx() { return cards[0].offsetWidth + 18; }
+  function stepPx()   { return cards[0].offsetWidth + 18; }
 
   function goToCard(idx, animate = true) {
     current = Math.max(0, Math.min(idx, maxIndex()));
     const tx = -(current * stepPx());
-
     if (animate) {
       gsap.to(track, { x: tx, duration: .65, ease: 'cinema' });
-    } else {
-      gsap.set(track, { x: tx });
-    }
-
-    if (curEl) {
-      gsap.fromTo(curEl,
-        { y: -6, opacity: 0 },
-        { y: 0, opacity: 1, duration: .3, ease: 'power2.out',
-          onStart: () => { curEl.textContent = current + 1; } }
-      );
-    }
-    if (totalEl) totalEl.textContent = COUNT;
-    dots.forEach((d, i) => d.classList.toggle('act', i === current));
-    if (prevBtn) prevBtn.classList.toggle('dim', current === 0);
-    if (nextBtn) nextBtn.classList.toggle('dim', current >= maxIndex());
-
-    // Card entrance stagger
-    if (animate) {
-      gsap.fromTo(cards.slice(current, current + visibleCount()),
+      gsap.fromTo(
+        cards.slice(current, current + visibleCount()),
         { y: 6, opacity: .6 },
         { y: 0, opacity: 1, duration: .5, stagger: .08, ease: 'power2.out' }
       );
+    } else {
+      gsap.set(track, { x: tx });
     }
+    if (curEl) {
+      curEl.textContent = current + 1;
+      gsap.fromTo(curEl, { y:-6, opacity:0 }, { y:0, opacity:1, duration:.3, ease:'power2.out' });
+    }
+    if (totalEl) totalEl.textContent = COUNT;
+    dots.forEach((d,i) => d.classList.toggle('act', i === current));
+    if (prevBtn) prevBtn.classList.toggle('dim', current === 0);
+    if (nextBtn) nextBtn.classList.toggle('dim', current >= maxIndex());
   }
 
-  const dots = cards.map((_, i) => {
+  const dots = cards.map((_,i) => {
     const d = document.createElement('div');
     d.className = 'wc-dot';
     d.addEventListener('click', () => goToCard(i));
@@ -885,41 +858,32 @@ document.querySelectorAll('.ct-main-btn').forEach(btn => {
     if (e.key === 'ArrowRight') { e.stopPropagation(); goToCard(current + 1); }
   });
 
-  // Drag — mouse
+  // Mouse drag
   let dragStartX = 0, dragging = false, startCurrent = 0, startX = 0;
   track.addEventListener('mousedown', e => {
-    dragging = true;
-    dragStartX = e.clientX;
-    startCurrent = current;
-    startX = -current * stepPx();
+    dragging = true; dragStartX = e.clientX;
+    startCurrent = current; startX = -(current * stepPx());
     track.classList.add('dragging');
-    document.body.classList.add('cur-drag');
   });
   window.addEventListener('mousemove', e => {
     if (!dragging) return;
-    const diff = dragStartX - e.clientX;
-    gsap.set(track, { x: startX - diff });
+    gsap.set(track, { x: startX - (dragStartX - e.clientX) });
   });
   window.addEventListener('mouseup', e => {
     if (!dragging) return;
-    dragging = false;
-    track.classList.remove('dragging');
-    document.body.classList.remove('cur-drag');
+    dragging = false; track.classList.remove('dragging');
     const diff = dragStartX - e.clientX;
-    if (Math.abs(diff) > 58) {
-      goToCard(diff > 0 ? startCurrent + 1 : startCurrent - 1);
-    } else {
-      goToCard(startCurrent);
-    }
+    if (Math.abs(diff) > 58) goToCard(diff > 0 ? startCurrent+1 : startCurrent-1);
+    else goToCard(startCurrent);
   });
 
-  // Drag — touch
+  // Touch drag
   let touchStartX = 0;
-  track.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; startCurrent = current; }, { passive: true });
-  track.addEventListener('touchend', e => {
+  track.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; startCurrent = current; }, { passive:true });
+  track.addEventListener('touchend',   e => {
     const diff = touchStartX - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 48) goToCard(diff > 0 ? current + 1 : current - 1);
-  }, { passive: true });
+    if (Math.abs(diff) > 48) goToCard(diff > 0 ? current+1 : current-1);
+  }, { passive:true });
 
   window.addEventListener('resize', () => goToCard(current, false));
   goToCard(0, false);
@@ -939,19 +903,17 @@ document.querySelectorAll('.ct-main-btn').forEach(btn => {
       tabs.forEach(t => t.classList.remove('act'));
       this.classList.add('act');
       const filter = this.dataset.filter;
-
       cards.forEach((card, i) => {
-        const cat = card.dataset.cat;
-        const show = filter === 'all' || cat === filter;
+        const show = filter === 'all' || card.dataset.cat === filter;
         if (show) {
           card.classList.remove('hidden');
           gsap.fromTo(card,
-            { opacity: 0, y: 16, scale: .97 },
-            { opacity: 1, y: 0, scale: 1, duration: .5, delay: i * .06, ease: 'cinema' }
+            { opacity:0, y:16, scale:.97 },
+            { opacity:1, y:0, scale:1, duration:.5, delay: i*.06, ease:'cinema' }
           );
         } else {
           gsap.to(card, {
-            opacity: 0, y: -8, scale: .97, duration: .3, ease: 'power2.in',
+            opacity:0, y:-8, scale:.97, duration:.3, ease:'power2.in',
             onComplete: () => card.classList.add('hidden')
           });
         }
