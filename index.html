@@ -5,37 +5,55 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>shayn · yassycreates</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,300;1,700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/style.css">
+<!-- GSAP CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/CustomEase.min.js"></script>
+<link rel="stylesheet" href="./assets/css/style.css">
+<link rel="icon" type="image/x-icon" href="./assets/favicon.ico">
 </head>
 <body>
 
-<div id="cur"></div>
-<div id="cur-o"></div>
+<!-- LOADER -->
+<div id="loader">
+  <div class="ld-inner">
+    <div class="ld-logo">yassycreates</div>
+    <div class="ld-bar-wrap"><div class="ld-bar"></div></div>
+    <div class="ld-count">00</div>
+  </div>
+</div>
+
+<!-- GRAIN OVERLAY -->
+<canvas id="grain"></canvas>
+
+<!-- CURSOR -->
+<div id="cur">
+  <div class="cur-dot"></div>
+  <div class="cur-ring"></div>
+  <div class="cur-text"></div>
+</div>
+
+<!-- PROGRESS LINE -->
 <div id="prog"></div>
+
+<!-- WIPE TRANSITION -->
 <div id="wipe"></div>
+
+<!-- 3D CANVAS (WebGL cat) -->
 <canvas id="c3d"></canvas>
 
 <!-- NAV -->
 <nav id="nav">
-
-  <div class="n-logo">yassycreates</div>
-
+  <div class="n-logo" data-goto="0">yassycreates</div>
   <div class="n-links">
     <a href="#" data-goto="0">Home</a>
     <a href="#" data-goto="1">About</a>
     <a href="#" data-goto="2">Work</a>
     <a href="#" data-goto="3">Skills</a>
-    <a href="#" data-goto="5">Contact</a>
+    <a href="#" data-goto="6">Contact</a>
     <span class="n-avail">Available</span>
   </div>
-
-  <!-- MOBILE HAMBURGER -->
-  <button class="menu-btn" id="menuBtn">
-    <span></span>
-    <span></span>
-  </button>
-
-  <!-- MOBILE MENU -->
+  <button class="menu-btn" id="menuBtn"><span></span><span></span></button>
   <div class="mob-menu" id="mobMenu">
     <a href="#" data-goto="0">Home</a>
     <a href="#" data-goto="1">About</a>
@@ -43,7 +61,6 @@
     <a href="#" data-goto="3">Skills</a>
     <a href="#" data-goto="6">Contact</a>
   </div>
-
 </nav>
 
 <!-- SLIDE DOTS -->
@@ -53,6 +70,7 @@
   <div class="sdot" data-goto="2"></div>
   <div class="sdot" data-goto="3"></div>
   <div class="sdot" data-goto="4"></div>
+  <div class="sdot" data-goto="5"></div>
   <div class="sdot" data-goto="6"></div>
 </div>
 
@@ -72,45 +90,60 @@
   <div class="arr"></div>
 </div>
 
-<!-- ══════════════ SLIDER ══════════════ -->
+<!-- ══════ SLIDER ══════ -->
 <div id="slider">
 
   <!-- S1 HERO -->
   <div class="slide active" id="s1" data-label="Home">
-    <div class="stg" style="text-align:center;display:flex;flex-direction:column;align-items:center;">
-      <p class="h1-tag">web · graphic · video · social</p>
-      <h1 class="h1-name">
-        <span class="solid">hi, i'm</span>
-        <span class="ghost">shayn</span>
+    <!-- Parallax layers -->
+    <div class="hero-bg-layer" id="hero-bg"></div>
+    <div class="hero-orbs">
+      <div class="hero-orb orb1"></div>
+      <div class="hero-orb orb2"></div>
+      <div class="hero-orb orb3"></div>
+    </div>
+
+    <div class="stg hero-stg" style="text-align:center;display:flex;flex-direction:column;align-items:center;position:relative;z-index:5;">
+      <div class="hero-eyebrow">
+        <span class="he-line"></span>
+        <p class="h1-tag" id="hero-tag">web · graphic · video · social</p>
+        <span class="he-line"></span>
+      </div>
+      <h1 class="h1-name" id="hero-title">
+        <span class="solid h1-word" data-split>hi, i'm</span>
+        <span class="ghost h1-word" data-split>shayn</span>
       </h1>
-      <div class="h1-roles">
+      <div class="h1-roles" id="hero-roles">
         <span class="role">Web Design</span>
         <span class="role">Graphic Design</span>
         <span class="role">Video Editing</span>
         <span class="role">Social Media</span>
       </div>
-      <div class="h1-cta">
-        <!-- data-goto instead of onclick — more reliable -->
-        <button class="bp" data-goto="2">View My Work</button>
-        <button class="bo" data-goto="6">Let's Work Together 🤝</button>
+      <div class="h1-cta" id="hero-cta">
+        <button class="bp mag-btn" data-goto="2">View My Work</button>
+        <button class="bo mag-btn" data-goto="6">Let's Work Together 🤝</button>
       </div>
     </div>
+
+    <!-- Floating badges -->
+    <div class="float-badge fb1" data-parallax="0.04">WordPress</div>
+    <div class="float-badge fb2" data-parallax="0.06">Photoshop</div>
+    <div class="float-badge fb3" data-parallax="0.03">CapCut</div>
+    <div class="float-badge fb4" data-parallax="0.05">HTML/CSS</div>
   </div>
 
   <!-- S2 ABOUT -->
   <div class="slide" id="s2" data-label="About">
     <div class="s-inner s2-grid">
 
-      <!-- LEFT: Discord Profile Card -->
       <div class="stg" style="display:flex;flex-direction:column;gap:14px;">
-
+        <!-- Discord card -->
         <div class="dc-card" id="dc-card">
           <div class="dc-banner">
             <div class="dc-banner-bg"></div>
             <div class="dc-av-wrap">
               <img class="dc-avatar" id="dc-avatar" src="" alt="avatar"
                 onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 80 80\'><rect width=\'80\' height=\'80\' fill=\'%23c97fa8\' rx=\'40\'/><text x=\'50%25\' y=\'55%25\' text-anchor=\'middle\' dominant-baseline=\'middle\' font-size=\'36\' fill=\'%23fff\'>S</text></svg>'"/>
-              <span class="dc-status-ring" id="dc-ring"></span>
               <span class="dc-status-dot" id="dc-dot"></span>
             </div>
           </div>
@@ -143,7 +176,7 @@
 
         <div>
           <p class="sp" style="margin-bottom:10px;">I'm <strong>Shayna Goles</strong> — PH-based web &amp; graphic designer · video editor · social media manager</p>
-          <div class="a-pills" style="margin-top:16px;">
+          <div class="a-pills stg" style="margin-top:16px;">
             <span class="pill">WordPress</span>
             <span class="pill">Photoshop</span>
             <span class="pill">Premiere</span>
@@ -166,7 +199,7 @@
             <h2 class="sh" style="font-size:clamp(26px,3vw,40px);margin-bottom:4px;">Shayna <em>Goles</em></h2>
             <p style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);">Davao, PH · yassycreates.lol</p>
           </div>
-          <a class="res-dl-btn" href="./assets/about/shaynacvup.pdf" download target="_blank" title="Download Resume">
+          <a class="res-dl-btn mag-btn" href="./assets/about/shaynacvup.pdf" download target="_blank" title="Download Resume">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
               <polyline points="7 10 12 15 17 10"/>
@@ -198,7 +231,6 @@
               </div>
             </div>
           </div>
-
           <div class="res-sec">
             <div class="res-sec-label">Education</div>
             <div class="res-items">
@@ -211,7 +243,6 @@
               </div>
             </div>
           </div>
-
           <div class="res-sec">
             <div class="res-sec-label">Core Skills</div>
             <div class="res-skill-bars">
@@ -229,290 +260,164 @@
 
   <!-- S3 WORK -->
   <div class="slide" id="s3" data-label="Work">
-  <div class="s-inner" style="max-width:1200px;">
- 
-    <div class="work-carousel-wrap">
- 
-      <!-- Header: title left, arrows right -->
-      <div class="wc-header stg">
-        <div>
-          <p class="ey">Selected Work</p>
-          <h2 class="sh">Websites I've <em>built</em></h2>
-        </div>
-        <div class="wc-arrows">
-          <div class="wc-counter">
-            <span class="cur" id="wc-cur">1</span>
-            <span> / </span>
-            <span id="wc-total">6</span>
+    <div class="s-inner" style="max-width:1200px;">
+      <div class="work-carousel-wrap">
+        <div class="wc-header stg">
+          <div>
+            <p class="ey">Selected Work</p>
+            <h2 class="sh">Websites I've <em>built</em></h2>
           </div>
-          <button class="wc-arrow" id="wc-prev" aria-label="Previous">←</button>
-          <button class="wc-arrow" id="wc-next" aria-label="Next">→</button>
+          <div class="wc-arrows">
+            <div class="wc-counter">
+              <span class="cur" id="wc-cur">1</span>
+              <span> / </span>
+              <span id="wc-total">6</span>
+            </div>
+            <button class="wc-arrow mag-btn" id="wc-prev" aria-label="Previous">←</button>
+            <button class="wc-arrow mag-btn" id="wc-next" aria-label="Next">→</button>
+          </div>
         </div>
+        <div class="wc-viewport">
+          <div class="wc-track" id="wc-track">
+            <div class="wcard" data-cursor="View">
+              <div class="wc-v"><canvas class="mc" data-h="310" data-h2="280"></canvas><div class="wc-ov"></div></div>
+              <div class="wc-b">
+                <div class="wc-tg"><span>Web Design</span><span>HTML/CSS</span><span>GHL</span></div>
+                <h3 class="wc-t">Website Sales Page</h3>
+                <p class="wc-d">Conversion-focused sales page with strategic flow, optimized visuals, and compelling CTAs designed to drive results.</p>
+                <a class="wc-lnk" href="https://crm.aiforbusiness.com/v2/preview/3cgkYzpnQHQcm1b4L8EN?notrack=true" target="_blank">View Live →</a>
+              </div>
+            </div>
+            <div class="wcard" data-cursor="View">
+              <div class="wc-v"><canvas class="mc" data-h="320" data-h2="300"></canvas><div class="wc-ov"></div></div>
+              <div class="wc-b">
+                <div class="wc-tg"><span>WordPress</span><span>Elementor</span></div>
+                <h3 class="wc-t">Freedom Forge Mining</h3>
+                <p class="wc-d">Professional and conversion-focused WordPress site with Elementor and custom HTML/CSS enhancements.</p>
+                <a class="wc-lnk" href="https://freedomforgemining.com/" target="_blank">View Live →</a>
+              </div>
+            </div>
+            <div class="wcard" data-cursor="View">
+              <div class="wc-v"><canvas class="mc" data-h="340" data-h2="315"></canvas><div class="wc-ov"></div></div>
+              <div class="wc-b">
+                <div class="wc-tg"><span>WordPress</span><span>Kubio</span></div>
+                <h3 class="wc-t">ASIC Docs</h3>
+                <p class="wc-d">Streamlined one-page site with custom HTML/CSS focused on clear user flow and efficient repair request submissions.</p>
+                <a class="wc-lnk" href="https://asicdocs.com/" target="_blank">View Live →</a>
+              </div>
+            </div>
+            <div class="wcard" data-cursor="View">
+              <div class="wc-v"><canvas class="mc" data-h="200" data-h2="175"></canvas><div class="wc-ov"></div></div>
+              <div class="wc-b">
+                <div class="wc-tg"><span>HTML/CSS</span><span>JavaScript</span></div>
+                <h3 class="wc-t">Law Firm Website</h3>
+                <p class="wc-d">Modern legal services website with a clean, responsive, and professional layout built from scratch.</p>
+                <a class="wc-lnk" href="https://nopapersnofear.com/" target="_blank">View Live →</a>
+              </div>
+            </div>
+            <div class="wcard" data-cursor="View">
+              <div class="wc-v"><canvas class="mc" data-h="270" data-h2="250"></canvas><div class="wc-ov"></div></div>
+              <div class="wc-b">
+                <div class="wc-tg"><span>HTML/CSS</span><span>JavaScript</span><span>Multi-lang</span></div>
+                <h3 class="wc-t">MyColima Tour Website</h3>
+                <p class="wc-d">Volunteer community platform for Tecomán, Colima, México. Features multilingual support (EN/ES/FR), program listings, property rentals, and a Gmail-integrated inquiry form.</p>
+                <a class="wc-lnk" href="https://mycolima.netlify.app/" target="_blank">View Live →</a>
+              </div>
+            </div>
+            <div class="wcard" data-cursor="View">
+              <div class="wc-v"><canvas class="mc" data-h="290" data-h2="260"></canvas><div class="wc-ov"></div></div>
+              <div class="wc-b">
+                <div class="wc-tg"><span>HTML/CSS</span><span>JavaScript</span><span>Legal</span></div>
+                <h3 class="wc-t">Lawsuit Document Preparer</h3>
+                <p class="wc-d">Professional legal document preparation service in California. Clean, trust-focused layout with services overview, testimonials, and consultation request form.</p>
+                <a class="wc-lnk" href="https://lawsuitdocumentpreparer.com/" target="_blank">View Live →</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="wc-dots" id="wc-dots"></div>
       </div>
- 
-      <!-- Carousel viewport -->
-      <div class="wc-viewport">
-        <div class="wc-track" id="wc-track">
- 
-          <!-- CARD 1: Sales Page -->
-          <div class="wcard">
-            <div class="wc-v">
-              <canvas class="mc" data-h="310" data-h2="280"></canvas>
-              <div class="wc-ov"></div>
-            </div>
-            <div class="wc-b">
-              <div class="wc-tg"><span>Web Design</span><span>HTML/CSS</span><span>GHL</span></div>
-              <h3 class="wc-t">Website Sales Page</h3>
-              <p class="wc-d">Conversion-focused sales page with strategic flow, optimized visuals, and compelling CTAs designed to drive results.</p>
-              <a class="wc-lnk" href="https://crm.aiforbusiness.com/v2/preview/3cgkYzpnQHQcm1b4L8EN?notrack=true" target="_blank">View Live →</a>
-            </div>
-          </div>
- 
-          <!-- CARD 2: Freedom Forge -->
-          <div class="wcard">
-            <div class="wc-v">
-              <canvas class="mc" data-h="320" data-h2="300"></canvas>
-              <div class="wc-ov"></div>
-            </div>
-            <div class="wc-b">
-              <div class="wc-tg"><span>WordPress</span><span>Elementor</span></div>
-              <h3 class="wc-t">Freedom Forge Mining</h3>
-              <p class="wc-d">Professional and conversion-focused WordPress site with Elementor and custom HTML/CSS enhancements.</p>
-              <a class="wc-lnk" href="https://freedomforgemining.com/" target="_blank">View Live →</a>
-            </div>
-          </div>
- 
-          <!-- CARD 3: ASIC Docs -->
-          <div class="wcard">
-            <div class="wc-v">
-              <canvas class="mc" data-h="340" data-h2="315"></canvas>
-              <div class="wc-ov"></div>
-            </div>
-            <div class="wc-b">
-              <div class="wc-tg"><span>WordPress</span><span>Kubio</span></div>
-              <h3 class="wc-t">ASIC Docs</h3>
-              <p class="wc-d">Streamlined one-page site with custom HTML/CSS focused on clear user flow and efficient repair request submissions.</p>
-              <a class="wc-lnk" href="https://asicdocs.com/" target="_blank">View Live →</a>
-            </div>
-          </div>
- 
-          <!-- CARD 4: Law Firm -->
-          <div class="wcard">
-            <div class="wc-v">
-              <canvas class="mc" data-h="200" data-h2="175"></canvas>
-              <div class="wc-ov"></div>
-            </div>
-            <div class="wc-b">
-              <div class="wc-tg"><span>HTML/CSS</span><span>JavaScript</span></div>
-              <h3 class="wc-t">Law Firm Website</h3>
-              <p class="wc-d">Modern legal services website with a clean, responsive, and professional layout built from scratch.</p>
-              <a class="wc-lnk" href="https://nopapersnofear.com/" target="_blank">View Live →</a>
-            </div>
-          </div>
- 
-         <!-- CARD 5: MyColima -->
-<div class="wcard">
-  <div class="wc-v">
-    <canvas class="mc" data-h="270" data-h2="250"></canvas>
-    <div class="wc-ov"></div>
-  </div>
-  <div class="wc-b">
-    <div class="wc-tg">
-      <span>HTML/CSS</span>
-      <span>JavaScript</span>
-      <span>Multi-lang</span>
     </div>
-    <h3 class="wc-t">MyColima Tour Website</h3>
-    <p class="wc-d">Volunteer community platform for Tecomán, Colima, México. Features multilingual support (EN/ES/FR), program listings, property rentals, and a Gmail-integrated inquiry form.</p>
-    <a class="wc-lnk" href="https://mycolima.netlify.app/" target="_blank">View Live →</a>
   </div>
-</div>
- 
-       <!-- CARD 6: Lawsuit Document Preparer -->
-<div class="wcard">
-  <div class="wc-v">
-    <canvas class="mc" data-h="290" data-h2="260"></canvas>
-    <div class="wc-ov"></div>
-  </div>
-  <div class="wc-b">
-    <div class="wc-tg">
-      <span>HTML/CSS</span>
-      <span>JavaScript</span>
-      <span>Legal</span>
+
+  <!-- S3B CREATIVE -->
+  <div class="slide" id="s3b" data-label="Creative">
+    <div class="s-inner" style="max-width:1200px;">
+      <div class="stg" style="margin-bottom:0;">
+        <p class="ey">Social Media · Branding · Design</p>
+        <h2 class="sh" style="margin-bottom:20px;">Creative <em>work</em></h2>
+      </div>
+      <div class="cw-tabs stg">
+        <button class="cw-tab act" data-filter="all">All</button>
+        <button class="cw-tab" data-filter="social">Social Media</button>
+        <button class="cw-tab" data-filter="brand">Brand Guide</button>
+        <button class="cw-tab" data-filter="design">Graphics</button>
+      </div>
+      <div class="cw-grid" id="cw-grid">
+        <div class="cwc" data-cat="social">
+          <div class="cwc-img">
+            <canvas class="mc" data-h="310" data-h2="285"></canvas>
+            <div class="cwc-ov"></div>
+            <span class="cwc-ico">📱</span>
+            <span class="cwc-cat social">Social Media</span>
+          </div>
+          <div class="cwc-body">
+            <div class="cwc-title">Social Media Management</div>
+            <p class="cwc-desc">Full content calendar, graphics, captions, and scheduling for client brand accounts across Instagram, Facebook &amp; TikTok.</p>
+            <div class="cwc-tags"><span class="cwc-tag">Meta</span><span class="cwc-tag">Canva</span><span class="cwc-tag">Strategy</span></div>
+            <br>
+            <a class="wc-lnk" href="https://drive.google.com/drive/folders/1UQmPUQmhh6ryxEHsQqQ-sCqRyL0mOJRb?usp=drive_link" target="_blank">View Work →</a>
+          </div>
+        </div>
+        <div class="cwc" data-cat="brand">
+          <div class="cwc-img">
+            <canvas class="mc" data-h="290" data-h2="265"></canvas>
+            <div class="cwc-ov"></div>
+            <span class="cwc-ico">🎨</span>
+            <span class="cwc-cat brand">Brand Guide</span>
+          </div>
+          <div class="cwc-body">
+            <div class="cwc-title">Brand Style Guide</div>
+            <p class="cwc-desc">Complete brand identity system — logo usage, color palette, typography, tone of voice, and visual guidelines.</p>
+            <div class="cwc-tags"><span class="cwc-tag">Photoshop</span><span class="cwc-tag">Canva</span><span class="cwc-tag">Branding</span></div>
+            <br>
+            <a class="wc-lnk" href="https://drive.google.com/drive/folders/1XquI1Jr0Z-Y3qYAUfj_XzoyDyz5Jzeqy?usp=drive_link" target="_blank">View Work →</a>
+          </div>
+        </div>
+        <div class="cwc" data-cat="video">
+          <div class="cwc-img">
+            <canvas class="mc" data-h="320" data-h2="295"></canvas>
+            <div class="cwc-ov"></div>
+            <span class="cwc-ico">🎬</span>
+            <span class="cwc-cat video">Video</span>
+          </div>
+          <div class="cwc-body">
+            <div class="cwc-title">Reels &amp; Short-form Content</div>
+            <p class="cwc-desc">Edited short-form videos for Instagram Reels and TikTok — captions, transitions, sound sync, and motion text.</p>
+            <div class="cwc-tags"><span class="cwc-tag">CapCut</span><span class="cwc-tag">Premiere</span><span class="cwc-tag">Reels</span></div>
+            <br>
+            <a class="wc-lnk" href="https://drive.google.com/drive/folders/16czB5tPB9quLPhXYnPu6G6jMVp38kOny?usp=drive_link" target="_blank">View Work →</a>
+          </div>
+        </div>
+        <div class="cwc" data-cat="design">
+          <div class="cwc-img">
+            <canvas class="mc" data-h="265" data-h2="240"></canvas>
+            <div class="cwc-ov"></div>
+            <span class="cwc-ico">✨</span>
+            <span class="cwc-cat design">Graphics</span>
+          </div>
+          <div class="cwc-body">
+            <div class="cwc-title">Social Media Graphics</div>
+            <p class="cwc-desc">Custom-designed posts, stories, covers, and promotional banners tailored to each brand's aesthetic.</p>
+            <div class="cwc-tags"><span class="cwc-tag">Canva</span><span class="cwc-tag">Photoshop</span><span class="cwc-tag">Design</span></div>
+            <br>
+            <a class="wc-lnk" href="https://drive.google.com/drive/folders/1A1MJ82P_70ylRjRYm2Eb6BDaqurZmRH-?usp=drive_link" target="_blank">View Work →</a>
+          </div>
+        </div>
+      </div>
     </div>
-    <h3 class="wc-t">Lawsuit Document Preparer</h3>
-    <p class="wc-d">Professional legal document preparation service in California. Clean, trust-focused layout with services overview, testimonials, and consultation request form.</p>
-    <a class="wc-lnk" href="https://lawsuitdocumentpreparer.com/" target="_blank">View Live →</a>
   </div>
-</div>
 
-        </div><!-- /wc-track -->
-      </div><!-- /wc-viewport -->
- 
-      <!-- Dot indicators -->
-      <div class="wc-dots" id="wc-dots"></div>
- 
-    </div><!-- /work-carousel-wrap -->
- 
-  </div>
-</div>
-<!-- CREATIVE WORKS-->
-<div class="slide" id="s3b" data-label="Creative">
-  <div class="s-inner" style="max-width:1200px;">
- 
-    <div class="stg" style="margin-bottom:0;">
-      <p class="ey">Social Media · Branding · Design</p>
-      <h2 class="sh" style="margin-bottom:20px;">Creative <em>work</em></h2>
-   
-    </div>
- 
-    <!-- Filter tabs -->
-    <div class="cw-tabs stg">
-      <button class="cw-tab act" data-filter="all">All</button>
-      <button class="cw-tab" data-filter="social">Social Media</button>
-      <button class="cw-tab" data-filter="brand">Brand Guide</button>
-      <button class="cw-tab" data-filter="design">Graphics</button>
-<!--       <button class="cw-tab" data-filter="video">Video</button>
- -->    </div>
- 
-    <!-- Grid -->
-    <div class="cw-grid" id="cw-grid">
- 
-      <!-- CARD: Social Media Management -->
-      <div class="cwc" data-cat="social">
-        <div class="cwc-img">
-          <canvas class="mc" data-h="310" data-h2="285"></canvas>
-          <div class="cwc-ov"></div>
-          <span class="cwc-ico">📱</span>
-          <span class="cwc-cat social">Social Media</span>
-              <a class="wc-lnk" href="https://lawsuitdocumentpreparer.com/" target="_blank">View Live →</a>
-
-        </div>
-        <div class="cwc-body">
-          <div class="cwc-title">Social Media Management</div>
-          <p class="cwc-desc">Full content calendar, graphics, captions, and scheduling for client brand accounts across Instagram, Facebook & TikTok.</p>
-          <div class="cwc-tags"><span class="cwc-tag">Meta</span><span class="cwc-tag">Canva</span><span class="cwc-tag">Strategy</span></div>
-            <BR>
-          <a class="wc-lnk" href="https://drive.google.com/drive/folders/1UQmPUQmhh6ryxEHsQqQ-sCqRyL0mOJRb?usp=drive_link" target="_blank">View Work →</a>
-
-        </div>
-      </div>
- 
-      <!-- CARD: Brand Style Guide -->
-      <div class="cwc" data-cat="brand">
-        <div class="cwc-img">
-          <canvas class="mc" data-h="290" data-h2="265"></canvas>
-          <div class="cwc-ov"></div>
-          <span class="cwc-ico">🎨</span>
-          <span class="cwc-cat brand">Brand Guide</span>
-        </div>
-        <div class="cwc-body">
-          <div class="cwc-title">Brand Style Guide</div>
-          <p class="cwc-desc">Complete brand identity system — logo usage, color palette, typography, tone of voice, and visual guidelines.</p>
-          <div class="cwc-tags"><span class="cwc-tag">Photoshop</span><span class="cwc-tag">Canva</span><span class="cwc-tag">Branding</span></div>
-          <BR>
-          <a class="wc-lnk" href="https://drive.google.com/drive/folders/1XquI1Jr0Z-Y3qYAUfj_XzoyDyz5Jzeqy?usp=drive_link" target="_blank">View Work →</a>
-        </div>
-      </div>
- 
-      <!-- CARD: Reels & Short-form -->
-      <div class="cwc" data-cat="video">
-        <div class="cwc-img">
-          <canvas class="mc" data-h="320" data-h2="295"></canvas>
-          <div class="cwc-ov"></div>
-          <span class="cwc-ico">🎬</span>
-          <span class="cwc-cat video">Video</span>
-        </div>
-        <div class="cwc-body">
-          <div class="cwc-title">Reels & Short-form Content</div>
-          <p class="cwc-desc">Edited short-form videos for Instagram Reels and TikTok — captions, transitions, sound sync, and motion text.</p>
-          <div class="cwc-tags"><span class="cwc-tag">CapCut</span><span class="cwc-tag">Premiere</span><span class="cwc-tag">Reels</span></div>
-          <BR>
-          <a class="wc-lnk" href="https://drive.google.com/drive/folders/16czB5tPB9quLPhXYnPu6G6jMVp38kOny?usp=drive_link" target="_blank">View Work →</a>
-        </div>
-      </div>
- 
-      <!-- CARD: Social Media Graphics -->
-      <div class="cwc" data-cat="design">
-        <div class="cwc-img">
-          <canvas class="mc" data-h="265" data-h2="240"></canvas>
-          <div class="cwc-ov"></div>
-          <span class="cwc-ico">✨</span>
-          <span class="cwc-cat design">Graphics</span>
-        </div>
-        <div class="cwc-body">
-          <div class="cwc-title">Social Media Graphics</div>
-          <p class="cwc-desc">Custom-designed posts, stories, covers, and promotional banners tailored to each brand's aesthetic.</p>
-          <div class="cwc-tags"><span class="cwc-tag">Canva</span><span class="cwc-tag">Photoshop</span><span class="cwc-tag">Design</span></div>
-          <BR>
-          <a class="wc-lnk" href="https://drive.google.com/drive/folders/1A1MJ82P_70ylRjRYm2Eb6BDaqurZmRH-?usp=drive_link" target="_blank">View Work →</a>
-        </div>
-      </div>
- 
-      <!-- CARD: Content Strategy -->
-<!--       <div class="cwc" data-cat="social">
-        <div class="cwc-img">
-          <canvas class="mc" data-h="300" data-h2="275"></canvas>
-          <div class="cwc-ov"></div>
-          <span class="cwc-ico">📊</span>
-          <span class="cwc-cat social">Social Media</span>
-        </div>
-        <div class="cwc-body">
-          <div class="cwc-title">Content Strategy & Calendar</div>
-          <p class="cwc-desc">Monthly content planning — themes, post formats, hashtag research, and scheduling for consistent brand presence.</p>
-          <div class="cwc-tags"><span class="cwc-tag">Strategy</span><span class="cwc-tag">Planning</span><span class="cwc-tag">Meta</span></div>
-        </div>
-      </div> -->
- 
-      <!-- CARD: Logo & Identity -->
-    <!--   <div class="cwc" data-cat="brand">
-        <div class="cwc-img">
-          <canvas class="mc" data-h="280" data-h2="255"></canvas>
-          <div class="cwc-ov"></div>
-          <span class="cwc-ico">💎</span>
-          <span class="cwc-cat brand">Brand Guide</span>
-        </div>
-        <div class="cwc-body">
-          <div class="cwc-title">Logo & Visual Identity</div>
-          <p class="cwc-desc">Logo design and full visual identity package — primary mark, variations, icon set, and color system.</p>
-          <div class="cwc-tags"><span class="cwc-tag">Illustrator</span><span class="cwc-tag">Logo</span><span class="cwc-tag">Identity</span></div>
-        </div>
-      </div>
-  -->
-      <!-- CARD: Marketing Materials -->
-    <!--   <div class="cwc" data-cat="design">
-        <div class="cwc-img">
-          <canvas class="mc" data-h="275" data-h2="250"></canvas>
-          <div class="cwc-ov"></div>
-          <span class="cwc-ico">📄</span>
-          <span class="cwc-cat design">Graphics</span>
-        </div>
-        <div class="cwc-body">
-          <div class="cwc-title">Marketing Materials</div>
-          <p class="cwc-desc">Flyers, posters, email banners, and digital ads designed for campaigns across print and digital channels.</p>
-          <div class="cwc-tags"><span class="cwc-tag">Photoshop</span><span class="cwc-tag">Canva</span><span class="cwc-tag">Print</span></div>
-        </div>
-      </div> -->
- 
-      <!-- CARD: Video Editing Package -->
-  <!--     <div class="cwc" data-cat="video">
-        <div class="cwc-img">
-          <canvas class="mc" data-h="305" data-h2="280"></canvas>
-          <div class="cwc-ov"></div>
-          <span class="cwc-ico">🎞️</span>
-          <span class="cwc-cat video">Video</span>
-        </div>
-        <div class="cwc-body">
-          <div class="cwc-title">YouTube Editing Package</div>
-          <p class="cwc-desc">Full YouTube video editing — cuts, color grade, subtitles, animated intro/outro, and thumbnail design.</p>
-          <div class="cwc-tags"><span class="cwc-tag">Premiere</span><span class="cwc-tag">DaVinci</span><span class="cwc-tag">YouTube</span></div>
-        </div>
-      </div> -->
- 
-    </div><!-- /cw-grid -->
- 
-  </div>
-</div>
   <!-- S4 SKILLS -->
   <div class="slide" id="s4" data-label="Skills">
     <div class="s-inner">
@@ -521,9 +426,10 @@
         <h2 class="sh">Creative &amp; <em>technical skills</em></h2>
       </div>
       <div class="sk-grid">
-        <div class="skc">
+        <div class="skc mag-card" data-index="0">
+          <div class="skc-glow"></div>
           <span class="skc-ico">🌐</span>
-          <div class="skc-t">Web Design & Development</div>
+          <div class="skc-t">Web Design &amp; Development</div>
           <ul class="sk-list">
             <li>HTML / CSS / JavaScript</li>
             <li>Responsive Web Design</li>
@@ -533,9 +439,10 @@
             <li>Landing Pages</li>
           </ul>
         </div>
-        <div class="skc">
+        <div class="skc mag-card" data-index="1">
+          <div class="skc-glow"></div>
           <span class="skc-ico">🎨</span>
-          <div class="skc-t">Graphic Design & Branding</div>
+          <div class="skc-t">Graphic Design &amp; Branding</div>
           <ul class="sk-list">
             <li>Adobe Photoshop</li>
             <li>Canva Pro</li>
@@ -545,9 +452,10 @@
             <li>Content Design</li>
           </ul>
         </div>
-        <div class="skc">
+        <div class="skc mag-card" data-index="2">
+          <div class="skc-glow"></div>
           <span class="skc-ico">🎬</span>
-          <div class="skc-t">Video Editing & Content</div>
+          <div class="skc-t">Video Editing &amp; Content</div>
           <ul class="sk-list">
             <li>CapCut</li>
             <li>DaVinci Resolve</li>
@@ -557,9 +465,10 @@
             <li>Social Media Content</li>
           </ul>
         </div>
-        <div class="skc">
+        <div class="skc mag-card" data-index="3">
+          <div class="skc-glow"></div>
           <span class="skc-ico">⚡</span>
-          <div class="skc-t">Workflow & Collaboration</div>
+          <div class="skc-t">Workflow &amp; Collaboration</div>
           <ul class="sk-list">
             <li>Meta Business Suite</li>
             <li>Google Workspace</li>
@@ -577,7 +486,7 @@
   <div class="slide" id="s5" data-label="Stats">
     <div class="s-inner">
       <div class="stg" style="text-align:center;">
-        <p class="ey" style="justify-content:center;">Experience & Growth</p>
+        <p class="ey" style="justify-content:center;">Experience &amp; Growth</p>
         <h2 class="sh">A few <em>highlights</em></h2>
       </div>
       <div class="stat-row">
@@ -593,8 +502,6 @@
   <div class="slide" id="s6" data-label="Contact">
     <div class="s-inner">
       <div class="contact-grid stg">
-
-        <!-- LEFT -->
         <div class="ct-left">
           <div class="ct-status-pill">
             <span class="dot-g"></span>
@@ -606,26 +513,24 @@
           </h2>
           <p class="ct-desc">Open for freelance, collaborations, and long-term creative partnerships.</p>
           <div class="ct-links">
-            <a href="mailto:hello@yassycreates.lol" class="ct-link">
+            <a href="mailto:shayna.goles31@gmail.com" class="ct-link mag-btn">
               <div class="ct-link-left"><span class="ct-icon">✦</span>shayna.goles31@gmail.com</div>
               <span class="ct-arrow">↗</span>
             </a>
-            <a href="https://www.linkedin.com/in/shaynagolesx/" target="_blank" class="ct-link">
+            <a href="https://www.linkedin.com/in/shaynagolesx/" target="_blank" class="ct-link mag-btn">
               <div class="ct-link-left"><span class="ct-icon">✦</span>LinkedIn Profile</div>
               <span class="ct-arrow">↗</span>
             </a>
-            <a href="https://github.com/shaynjasx" target="_blank" class="ct-link">
+            <a href="https://github.com/shaynjasx" target="_blank" class="ct-link mag-btn">
               <div class="ct-link-left"><span class="ct-icon">✦</span>GitHub Portfolio</div>
               <span class="ct-arrow">↗</span>
             </a>
-            <a href="https://www.facebook.com/profile.php?id=100091715452741" target="_blank" class="ct-link">
+            <a href="https://www.facebook.com/profile.php?id=100091715452741" target="_blank" class="ct-link mag-btn">
               <div class="ct-link-left"><span class="ct-icon">✦</span>Facebook</div>
               <span class="ct-arrow">↗</span>
             </a>
           </div>
         </div>
-
-        <!-- RIGHT -->
         <div class="ct-card">
           <div class="ct-card-head">
             <h3>availability</h3>
@@ -637,20 +542,16 @@
             <div class="ct-row"><span>TIMEZONE</span><strong>GMT+8 Philippines</strong></div>
             <div class="ct-row"><span>RESPONSE</span><strong>Within 24 Hours</strong></div>
           </div>
-          <!-- ct-main-btn — Gmail compose wired in main.js -->
-          <a href="#" class="ct-main-btn">Email Me Directly ↗</a>
+          <a href="#" class="ct-main-btn mag-btn">Email Me Directly ↗</a>
         </div>
-
       </div>
     </div>
   </div>
-<div class="ct-mini">
-  © 2026 yassycreates ·creative designer ·built with precision
-</div>
+
+  <div class="ct-mini">© 2026 yassycreates · creative designer · built with precision</div>
+
 </div><!-- #slider -->
 
-<script src="/assets/script/main.js"></script>
-
+<script src="./assets/script/main.js"></script>
 </body>
-
 </html>
