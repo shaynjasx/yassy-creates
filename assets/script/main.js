@@ -67,18 +67,41 @@ let currentCatX= 0, currentCatY= 0;
   let W, H;
   const resize = () => { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; };
   window.addEventListener('resize', resize); resize();
+  // Performance: grain renders at half resolution scaled up
+  // and only every 4 frames — barely visible difference
   let frame = 0;
+  const GRAIN_SCALE = 0.35; // render at 35% size, stretch to full
+  let gW, gH;
+
+  const grainResize = () => {
+    gW = Math.floor(window.innerWidth  * GRAIN_SCALE);
+    gH = Math.floor(window.innerHeight * GRAIN_SCALE);
+    W = cv.width  = window.innerWidth;
+    H = cv.height = window.innerHeight;
+  };
+  window.addEventListener('resize', grainResize); grainResize();
+
+  // Offscreen canvas for grain at low res
+  const offscreen = document.createElement('canvas');
+  const offCtx    = offscreen.getContext('2d');
+
   function drawGrain() {
     frame++;
-    if (frame % 2 === 0) {
-      const imageData = ctx.createImageData(W, H);
+    // Only redraw every 4 frames — saves 75% CPU
+    if (frame % 4 === 0) {
+      offscreen.width  = gW;
+      offscreen.height = gH;
+      const imageData = offCtx.createImageData(gW, gH);
       const data = imageData.data;
       for (let i = 0; i < data.length; i += 4) {
         const v = Math.random() * 255 | 0;
         data[i] = data[i+1] = data[i+2] = v;
-        data[i+3] = 18;
+        data[i+3] = 14; // slightly less alpha too
       }
-      ctx.putImageData(imageData, 0, 0);
+      offCtx.putImageData(imageData, 0, 0);
+      // Stretch low-res grain to full screen
+      ctx.clearRect(0, 0, W, H);
+      ctx.drawImage(offscreen, 0, 0, W, H);
     }
     requestAnimationFrame(drawGrain);
   }
@@ -875,7 +898,7 @@ document.querySelectorAll('.mc').forEach((cv, idx) => {
   }
 
   // ── Spawn shapes ──
-  const COUNT = 55;
+  const COUNT = 35; // reduced from 55 for performance
   const shapes = Array.from({ length: COUNT }, () => new Shape());
 
   // ── Static stars ──
@@ -929,26 +952,30 @@ document.querySelectorAll('.mc').forEach((cv, idx) => {
       ctx.fill();
     });
 
-    // ── Constellation lines between close shapes ──
-    ctx.save();
-    for(let i = 0; i < shapes.length; i++) {
-      for(let j = i+1; j < shapes.length; j++) {
-        const dx   = shapes[i].x - shapes[j].x;
-        const dy   = shapes[i].y - shapes[j].y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        const maxD = 120;
-        if(dist < maxD) {
-          const strength = (1 - dist/maxD) * 0.06;
-          ctx.beginPath();
-          ctx.moveTo(shapes[i].x, shapes[i].y);
-          ctx.lineTo(shapes[j].x, shapes[j].y);
-          ctx.strokeStyle = `rgba(201,127,168,${strength})`;
-          ctx.lineWidth   = 0.4;
-          ctx.stroke();
+    // ── Constellation lines — only every 2 frames for perf ──
+    if(t % 2 < 1) {
+      ctx.save();
+      for(let i = 0; i < shapes.length; i++) {
+        for(let j = i+1; j < shapes.length; j++) {
+          const dx   = shapes[i].x - shapes[j].x;
+          const dy   = shapes[i].y - shapes[j].y;
+          // Use squared distance to avoid sqrt where possible
+          const distSq = dx*dx + dy*dy;
+          const maxD   = 90;
+          if(distSq < maxD * maxD) {
+            const dist     = Math.sqrt(distSq);
+            const strength = (1 - dist/maxD) * 0.06;
+            ctx.beginPath();
+            ctx.moveTo(shapes[i].x, shapes[i].y);
+            ctx.lineTo(shapes[j].x, shapes[j].y);
+            ctx.strokeStyle = `rgba(201,127,168,${strength})`;
+            ctx.lineWidth   = 0.4;
+            ctx.stroke();
+          }
         }
       }
+      ctx.restore();
     }
-    ctx.restore();
 
     // ── Update + draw shapes ──
     // Sort by z so deeper shapes draw first (painter's algorithm)
@@ -969,6 +996,9 @@ document.querySelectorAll('.mc').forEach((cv, idx) => {
 
   // ── Click burst: spawn shapes toward cursor ──
   cv.style.pointerEvents = 'none'; // keep it non-blocking
+
+  // On mobile, stop the physics loop entirely — too heavy
+  if(window.innerWidth <= 768) return;
 })();
 
 
@@ -1205,5 +1235,115 @@ document.querySelectorAll('.ct-main-btn').forEach(btn => {
         }
       });
     });
+  });
+})();
+
+// =====================================================
+// WEBSITE PREVIEW MODAL
+// Click any .wcard → opens modal with iframe preview
+// =====================================================
+(function() {
+  const modal    = document.getElementById('site-modal');
+  const backdrop = document.getElementById('sm-backdrop');
+  const closeBtn = document.getElementById('sm-close');
+  const iframe   = document.getElementById('sm-iframe');
+  const loading  = document.getElementById('sm-loading');
+  const urlText  = document.getElementById('sm-url-text');
+  const titleEl  = document.getElementById('sm-title');
+  const tagsEl   = document.getElementById('sm-tags');
+  const openBtn  = document.getElementById('sm-open-btn');
+  if (!modal) return;
+
+  function openModal(url, title, tags) {
+    // Set info
+    urlText.textContent = url.replace('https://','');
+    titleEl.textContent = title;
+    openBtn.href = url;
+
+    // Build tags
+    tagsEl.innerHTML = '';
+    tags.split(',').forEach(tag => {
+      const span = document.createElement('span');
+      span.className = 'sm-tag';
+      span.textContent = tag.trim();
+      tagsEl.appendChild(span);
+    });
+
+    // Show loading spinner
+    loading.classList.remove('hide');
+    iframe.src = 'about:blank';
+
+    // Open modal
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    // Load iframe after modal is open
+    setTimeout(() => {
+      iframe.src = url;
+      iframe.onload = () => {
+        gsap.to(loading, {
+          opacity: 0, duration: .4,
+          onComplete: () => loading.classList.add('hide')
+        });
+      };
+    }, 120);
+
+    // Entrance animation
+    gsap.fromTo('.sm-box',
+      { scale: .95, y: 20, opacity: 0 },
+      { scale: 1, y: 0, opacity: 1, duration: .5, ease: 'cinema' }
+    );
+  }
+
+  function closeModal() {
+    gsap.to('.sm-box', {
+      scale: .95, y: 16, opacity: 0,
+      duration: .32, ease: 'power2.in',
+      onComplete: () => {
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+        iframe.src = 'about:blank';
+        loading.classList.remove('hide');
+        gsap.set('.sm-box', { clearProps: 'all' });
+      }
+    });
+  }
+
+  // Wire up card clicks
+  document.querySelectorAll('.wcard[data-url]').forEach(card => {
+    card.addEventListener('click', function(e) {
+      // Don't open if user was dragging the carousel
+      if (Math.abs(dragDeltaX) > 8) return;
+      const url   = this.dataset.url;
+      const title = this.dataset.title || 'Project';
+      const tags  = this.dataset.tags  || '';
+      if (url) openModal(url, title, tags);
+    });
+  });
+
+  // Track drag delta to prevent modal opening on swipe
+  let dragDeltaX = 0;
+  const track = document.getElementById('wc-track');
+  if (track) {
+    track.addEventListener('mousedown', e => { dragDeltaX = 0; });
+    window.addEventListener('mousemove', e => {
+      if (e.buttons === 1) dragDeltaX += Math.abs(e.movementX);
+    });
+    window.addEventListener('mouseup', () => {
+      setTimeout(() => { dragDeltaX = 0; }, 300);
+    });
+  }
+
+  // Close on backdrop / close button / Escape
+  backdrop.addEventListener('click', closeModal);
+  closeBtn.addEventListener('click', closeModal);
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+  });
+
+  // Add to cursor hover detection
+  document.querySelectorAll('.wcard[data-url]').forEach(el => {
+    el.addEventListener('mouseenter', () => document.body.classList.add('cur-hover'));
+    el.addEventListener('mouseleave', () => document.body.classList.remove('cur-hover'));
   });
 })();
