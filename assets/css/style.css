@@ -645,5 +645,602 @@ body.cur-hover .cur-ring{width:52px;height:52px;border-color:var(--pink);}
 #s1 .hero-content {
   overflow: visible !important;
 }
-/* To completely hide grain — add this */
-#grain { display: none; }
+
+/* ══════════════════════════════════════════════════════
+   CREATIVE WORK PREVIEW MODAL
+   Phone frame for video/social, screen frame for design
+══════════════════════════════════════════════════════ */
+
+#creative-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 88889;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .35s;
+}
+#creative-modal.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.cm-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(3,4,10,.92);
+  backdrop-filter: blur(22px);
+}
+
+.cm-box {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  transform: scale(.94) translateY(18px);
+  transition: transform .45s cubic-bezier(.16,1,.3,1);
+  max-height: 90vh;
+}
+#creative-modal.open .cm-box {
+  transform: scale(1) translateY(0);
+}
+
+/* close button */
+.cm-close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,45,120,.25);
+  background: rgba(7,8,15,.95);
+  color: rgba(240,242,255,.6);
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: none;
+  transition: all .25s;
+  z-index: 10;
+}
+.cm-close:hover {
+  background: rgba(255,45,120,.14);
+  border-color: var(--pink);
+  color: var(--pink);
+}
+
+/* ── PHONE FRAME ── */
+.cm-phone {
+  width: 230px;
+  height: 460px;
+  border-radius: 36px;
+  background: #0a0b14;
+  border: 2px solid rgba(255,255,255,.12);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.04),
+    0 28px 60px rgba(0,0,0,.8),
+    inset 0 0 0 1px rgba(255,255,255,.06);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+/* notch */
+.cm-phone::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 72px; height: 22px;
+  border-radius: 100px;
+  background: #0a0b14;
+  border: 1.5px solid rgba(255,255,255,.1);
+  z-index: 10;
+}
+/* side button */
+.cm-phone::after {
+  content: '';
+  position: absolute;
+  right: -3px;
+  top: 100px;
+  width: 3px; height: 52px;
+  border-radius: 0 3px 3px 0;
+  background: rgba(255,255,255,.1);
+}
+.cm-phone-screen {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 34px;
+}
+
+/* ── SCREEN / RECTANGLE FRAME ── */
+.cm-screen {
+  width: 560px;
+  max-width: 90vw;
+  border-radius: 14px;
+  background: #0a0b14;
+  border: 1.5px solid rgba(255,255,255,.1);
+  box-shadow: 0 28px 60px rgba(0,0,0,.8);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+/* browser-like top bar */
+.cm-screen-bar {
+  height: 36px;
+  background: rgba(255,255,255,.04);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 7px;
+}
+.cm-screen-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+}
+.cm-screen-dot:nth-child(1){background:rgba(255,95,87,.7);}
+.cm-screen-dot:nth-child(2){background:rgba(254,188,46,.7);}
+.cm-screen-dot:nth-child(3){background:rgba(40,200,64,.7);}
+.cm-screen-body {
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── SHARED: image carousel inside frame ── */
+.cm-slides {
+  display: flex;
+  transition: transform .5s cubic-bezier(.16,1,.3,1);
+  height: 100%;
+}
+.cm-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+.cm-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+/* placeholder when no image */
+.cm-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(135deg, rgba(255,45,120,.06), rgba(0,229,255,.04));
+}
+.cm-placeholder-ico { font-size: 36px; opacity: .4; }
+.cm-placeholder-txt {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(240,242,255,.2);
+}
+
+/* prev/next arrows over frame */
+.cm-nav {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  pointer-events: none;
+  z-index: 5;
+}
+.cm-arr {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: rgba(7,8,15,.75);
+  border: 1px solid rgba(255,255,255,.12);
+  color: rgba(240,242,255,.7);
+  font-size: 12px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: none;
+  pointer-events: auto;
+  transition: all .25s;
+  backdrop-filter: blur(6px);
+}
+.cm-arr:hover { background: rgba(255,45,120,.18); border-color: var(--pink); color: var(--pink); }
+.cm-arr.hidden { opacity: 0; pointer-events: none; }
+
+/* dot indicators */
+.cm-dots {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+.cm-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(240,242,255,.2);
+  transition: all .3s;
+  cursor: none;
+}
+.cm-dot.act {
+  background: var(--pink);
+  width: 14px;
+  border-radius: 3px;
+  box-shadow: 0 0 6px rgba(255,45,120,.4);
+}
+
+/* ── bottom info + CTA ── */
+.cm-info {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.cm-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .25em;
+  text-transform: uppercase;
+  color: rgba(240,242,255,.28);
+}
+.cm-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--white);
+}
+.cm-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 22px;
+  border-radius: 100px;
+  background: linear-gradient(135deg, var(--pink), #c4005a);
+  color: #fff;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: none;
+  transition: all .3s;
+  box-shadow: 0 8px 24px rgba(255,45,120,.28);
+}
+.cm-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(255,45,120,.42);
+}
+
+/* click hint on cwc cards */
+.cwc-preview-hint {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  z-index: 4;
+  padding: 4px 10px;
+  border-radius: 100px;
+  border: 1px solid rgba(255,45,120,.28);
+  background: rgba(7,8,15,.75);
+  backdrop-filter: blur(8px);
+  font-family: 'DM Mono', monospace;
+  font-size: 7px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(255,45,120,.65);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: all .3s;
+}
+.cwc:hover .cwc-preview-hint { opacity: 1; transform: translateY(0); }
+
+@media(max-width:768px) {
+  .cm-phone { width: 180px; height: 360px; border-radius: 28px; }
+  .cm-phone::before { width: 58px; height: 18px; top: 10px; }
+  .cm-screen { width: 96vw; }
+  .cm-title { font-size: 16px; }
+}
+
+/* ══════════════════════════════════════════════════
+   TIKTOK / REELS PHONE PREVIEW
+   Looks exactly like TikTok feed inside phone frame
+══════════════════════════════════════════════════ */
+
+/* override phone height for reels */
+.cm-phone.reels {
+  width: 240px;
+  height: 500px;
+  border-radius: 38px;
+}
+.cm-phone.reels::before {
+  width: 68px; height: 20px; top: 12px;
+}
+
+/* reel viewport inside phone */
+.reels-viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 36px;
+  background: #000;
+}
+
+/* vertical track — slides up/down */
+.reels-track {
+  display: flex;
+  flex-direction: column;
+  transition: transform .45s cubic-bezier(.16,1,.3,1);
+  height: 100%;
+}
+
+/* single reel item */
+.reel-item {
+  flex: 0 0 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background: #111;
+}
+
+/* reel background image */
+.reel-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* dark gradient overlays */
+.reel-grad-top {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 100px;
+  background: linear-gradient(to bottom, rgba(0,0,0,.65), transparent);
+  z-index: 2;
+}
+.reel-grad-bot {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 180px;
+  background: linear-gradient(to top, rgba(0,0,0,.85), transparent);
+  z-index: 2;
+}
+
+/* TikTok top nav */
+.reel-topbar {
+  position: absolute;
+  top: 30px; left: 0; right: 0;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+}
+.reel-tab {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,.5);
+  letter-spacing: .02em;
+}
+.reel-tab.act {
+  color: #fff;
+  border-bottom: 1.5px solid #fff;
+  padding-bottom: 1px;
+}
+
+/* play icon overlay */
+.reel-play {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reel-play-ico {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.18);
+  backdrop-filter: blur(4px);
+  border: 1.5px solid rgba(255,255,255,.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  opacity: .85;
+  padding-left: 3px; /* optical center for ▶ */
+}
+
+/* right side actions */
+.reel-actions {
+  position: absolute;
+  right: 8px;
+  bottom: 90px;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.reel-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.reel-action-ico {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+/* avatar action */
+.reel-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid #fff;
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  font-family: 'DM Mono', monospace;
+  overflow: hidden;
+  position: relative;
+}
+/* + follow button */
+.reel-follow-dot {
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--pink);
+  border: 1.5px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  line-height: 1;
+  color: #fff;
+  font-weight: 700;
+}
+.reel-action-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 7px;
+  color: rgba(255,255,255,.8);
+  letter-spacing: .04em;
+}
+
+/* spinning vinyl / music disc */
+.reel-disc {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a1a2e, #333);
+  border: 2px solid rgba(255,255,255,.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  animation: discSpin 4s linear infinite;
+}
+@keyframes discSpin { to { transform: rotate(360deg); } }
+
+/* bottom info */
+.reel-info {
+  position: absolute;
+  bottom: 22px; left: 10px;
+  right: 52px;
+  z-index: 6;
+}
+.reel-username {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: .04em;
+  margin-bottom: 3px;
+}
+.reel-caption {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 8.5px;
+  color: rgba(255,255,255,.88);
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+.reel-music {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'DM Mono', monospace;
+  font-size: 7px;
+  color: rgba(255,255,255,.7);
+  letter-spacing: .04em;
+  animation: marqueeSlide 8s linear infinite;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 140px;
+}
+.reel-music-ico { font-size: 9px; flex-shrink: 0; }
+@keyframes marqueeSlide {
+  0%   { transform: translateX(0); }
+  40%  { transform: translateX(-40%); }
+  60%  { transform: translateX(-40%); }
+  100% { transform: translateX(0); }
+}
+
+/* scroll indicator arrows on phone */
+.reels-hint {
+  position: absolute;
+  right: 50%;
+  transform: translateX(50%);
+  z-index: 8;
+  font-size: 9px;
+  color: rgba(255,255,255,.3);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: .1em;
+}
+.reels-hint.top { top: 52px; }
+.reels-hint.bot { bottom: 8px; }
+
+/* swipe gesture hint animation */
+@keyframes swipeHint {
+  0%   { opacity: 0; transform: translateX(50%) translateY(0); }
+  30%  { opacity: 1; }
+  70%  { opacity: 1; transform: translateX(50%) translateY(-8px); }
+  100% { opacity: 0; transform: translateX(50%) translateY(-8px); }
+}
+.reels-hint.bot { animation: swipeHint 3s ease-in-out 1.5s infinite; }
+
+@media(max-width:768px) {
+  .cm-phone.reels { width: 200px; height: 420px; }
+}
+
+/* ══════════════════════════════════════════════
+   FIX: Creative works grid broken layout
+   Force 4-column grid on desktop
+══════════════════════════════════════════════ */
+#cw-grid.cw-grid,
+.cw-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 14px !important;
+}
+@media(max-width:1100px){
+  #cw-grid.cw-grid,
+  .cw-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media(max-width:600px){
+  #cw-grid.cw-grid,
+  .cw-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ── Screen frame adaptive height ── */
+.cm-screen-body.ratio-square { height: 360px !important; }
+.cm-screen-body.ratio-portrait { height: 420px !important; }
+.cm-screen-body.ratio-landscape { height: 260px !important; }
+
+/* contain mode for graphics so full image is visible */
+.cm-screen-body img.contain-img {
+  object-fit: contain !important;
+  background: #0a0b14;
+}

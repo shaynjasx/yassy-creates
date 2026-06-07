@@ -1347,3 +1347,367 @@ document.querySelectorAll('.ct-main-btn').forEach(btn => {
     el.addEventListener('mouseleave', () => document.body.classList.remove('cur-hover'));
   });
 })();
+
+
+
+
+// =====================================================
+// CREATIVE WORK PREVIEW MODAL
+// mp4 → <video preload="metadata"> shows first frame
+// as thumbnail, click play button to play inline
+// =====================================================
+(function() {
+  var modal    = document.getElementById('creative-modal');
+  var backdrop = document.getElementById('cm-backdrop');
+  var closeBtn = document.getElementById('cm-close');
+  var frameWrap= document.getElementById('cm-frame-wrap');
+  var dotsWrap = document.getElementById('cm-dots');
+  var labelEl  = document.getElementById('cm-label');
+  var titleEl  = document.getElementById('cm-title');
+  var ctaBtn   = document.getElementById('cm-cta');
+  if (!modal) return;
+
+  var curSlide   = 0;
+  var totalSlides= 0;
+  var dotEls     = [];
+  var isReels    = false;
+
+  // ── Clean URL — only trim leading/trailing whitespace
+  // Keep internal spaces intact (e.g. "Reel 1.mp4")
+  function cleanUrl(url) {
+    // Remove newlines and extra spaces at start/end only
+    return url.replace(/[\r\n]+/g, '').trim();
+  }
+
+  // ── Is it a direct video file? ──
+  function isVideoFile(url) {
+    return /\.(mp4|webm|mov|ogg)/i.test(url);
+  }
+
+  // ── Is it a direct image file or Drive image? ──
+  function isImageUrl(url) {
+    return /\.(jpg|jpeg|png|gif|webp)/i.test(url) || url.includes('uc?export=view') || url.includes('uc?export=download');
+  }
+
+  // ── Build a single reel item ──
+  function buildReelItem(url, idx, cap, likes, cmts, shs, mus) {
+    var html = '<div class="reel-item" style="position:relative;height:500px;flex:0 0 500px;overflow:hidden">';
+
+    if (url && isVideoFile(url)) {
+      html += '<video';
+      html +=   ' src="' + url + '"';
+      html +=   ' preload="metadata"';
+      html +=   ' playsinline';
+      html +=   ' muted';
+      html +=   ' style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#111"';
+      html +=   ' onerror="this.style.opacity=0"';
+      html += '></video>';
+
+      // Bright play button overlay — always visible
+      html += '<div data-play-ov="1"';
+      html +=   ' style="position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer">';
+      html +=   '<div style="width:62px;height:62px;border-radius:50%;background:linear-gradient(135deg,var(--pink),#c4005a);display:flex;align-items:center;justify-content:center;font-size:24px;padding-left:4px;box-shadow:0 0 32px rgba(255,45,120,.7);pointer-events:none">&#9654;</div>';
+      html +=   '<span style="font-family:DM Mono,monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.5);pointer-events:none">tap to play</span>';
+      html += '</div>';
+
+    } else if (url && isImageUrl(url)) {
+      // IMAGE
+      html += '<img src="' + url + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1" loading="lazy">';
+    } else {
+      // PLACEHOLDER
+      html += '<div style="position:absolute;inset:0;background:linear-gradient(135deg,#1a0d20,#0d1a2e);z-index:1"></div>';
+    }
+
+    // TikTok UI overlays (pointer-events:none so video is clickable)
+    html += '<div style="position:absolute;top:0;left:0;right:0;height:100px;background:linear-gradient(to bottom,rgba(0,0,0,.6),transparent);z-index:4;pointer-events:none"></div>';
+    html += '<div style="position:absolute;bottom:0;left:0;right:0;height:180px;background:linear-gradient(to top,rgba(0,0,0,.85),transparent);z-index:4;pointer-events:none"></div>';
+
+    // Top nav
+    html += '<div class="reel-topbar" style="z-index:5;pointer-events:none">';
+    html +=   '<span class="reel-tab">Following</span>';
+    html +=   '<span class="reel-tab act">For You</span>';
+    html += '</div>';
+
+    // Right actions
+    html += '<div class="reel-actions" style="z-index:5">';
+    html +=   '<div class="reel-action" style="margin-bottom:6px"><div class="reel-avatar">S<div class="reel-follow-dot">+</div></div></div>';
+    html +=   '<div class="reel-action"><div class="reel-action-ico">&#10084;&#65039;</div><span class="reel-action-count">' + (likes||'1.2K') + '</span></div>';
+    html +=   '<div class="reel-action"><div class="reel-action-ico">&#128172;</div><span class="reel-action-count">' + (cmts||'48') + '</span></div>';
+    html +=   '<div class="reel-action"><div class="reel-action-ico">&#8599;&#65039;</div><span class="reel-action-count">' + (shs||'312') + '</span></div>';
+    html +=   '<div class="reel-action" style="margin-top:4px"><div class="reel-disc">&#127925;</div></div>';
+    html += '</div>';
+
+    // Bottom info
+    html += '<div class="reel-info" style="z-index:5;pointer-events:none">';
+    html +=   '<div class="reel-username">@yassycreates</div>';
+    html +=   '<div class="reel-caption">' + cap + '</div>';
+    html +=   '<div class="reel-music"><span class="reel-music-ico">&#127925;</span><span>' + mus + '</span></div>';
+    html += '</div>';
+
+    html += '</div>'; // reel-item
+    return html;
+  }
+
+  // ── Build Reels phone frame ──
+  function buildReels(urls, card) {
+    var rawCaps  = (card.dataset.captions || '').split('|');
+    var capDefs  = ['✨ Short-form content edit','🎬 Transitions & motion text','📱 Reels for brand growth'];
+    var musDefs  = ['original sound · yassycreates','trending audio 2025','viral reel sound'];
+    var likesArr = ['2.4K','1.8K','3.1K'];
+    var cmtsArr  = ['48','92','37'];
+    var shsArr   = ['312','228','405'];
+    var data     = urls.length ? urls : [''];
+
+    var REEL_H = 500; // matches .cm-phone.reels height in CSS
+    var html = '<div class="cm-phone reels"><div class="cm-phone-screen"><div class="reels-viewport">';
+    html += '<div class="reels-track" id="cm-slides" style="display:flex;flex-direction:column;transition:transform .5s cubic-bezier(.16,1,.3,1)">';
+
+    for (var i = 0; i < data.length; i++) {
+      html += buildReelItem(
+        data[i],
+        i,
+        (rawCaps[i]||'').trim() || capDefs[i % capDefs.length],
+        likesArr[i % likesArr.length],
+        cmtsArr[i % cmtsArr.length],
+        shsArr[i % shsArr.length],
+        musDefs[i % musDefs.length]
+      );
+    }
+
+    html += '</div>'; // cm-slides
+    if (data.length > 1) {
+      html += '<div class="reels-hint bot" style="z-index:8">&#8593; swipe</div>';
+    }
+    html += '</div></div></div>'; // viewport, phone-screen, phone
+    return html;
+  }
+
+  // ── Detect file type ──
+  function isPDF(url) { return /\.pdf/i.test(url); }
+
+  // ── Build Screen frame — images, PDFs, adaptive ratio ──
+  function buildScreen(urls) {
+    var data = urls.length ? urls : [''];
+    var bodyId = 'csb' + Math.floor(Math.random()*99999);
+
+    var html = '<div class="cm-screen"><div class="cm-screen-bar">';
+    html += '<div class="cm-screen-dot"></div><div class="cm-screen-dot"></div><div class="cm-screen-dot"></div>';
+    html += '</div>';
+    html += '<div id="' + bodyId + '" style="height:300px;position:relative;overflow:hidden;transition:height .3s ease">';
+    html += '<div id="cm-slides" style="display:flex;height:100%;transition:transform .45s cubic-bezier(.16,1,.3,1)">';
+
+    for (var i = 0; i < data.length; i++) {
+      var url = data[i] ? data[i].trim() : '';
+      html += '<div style="flex:0 0 100%;height:100%;position:relative;overflow:hidden;background:#0a0b14">';
+
+      if (url && isPDF(url)) {
+        // PDF preview via iframe
+        html += '<iframe src="' + url + '#toolbar=0&navpanes=0&scrollbar=0"';
+        html +=   ' style="width:100%;height:100%;border:none;display:block">';
+        html += '</iframe>';
+
+      } else if (url) {
+        // Image — detect ratio onload and resize container
+        html += '<img src="' + url + '"';
+        html +=   ' data-bodyid="' + bodyId + '"';
+        html +=   ' style="width:100%;height:100%;object-fit:contain;display:block;background:#0a0b14"';
+        html +=   ' loading="lazy"';
+        html +=   ' onload="(function(el){';
+        html +=     'var r=el.naturalWidth/el.naturalHeight;';
+        html +=     'var b=document.getElementById(el.dataset.bodyid);';
+        html +=     'if(!b)return;';
+        html +=     'var h=r<0.8?420:r<1.1?360:260;';
+        html +=     'b.style.height=h+"px";';
+        html +=   '})(this)"';
+        html +=   ' onerror="this.style.opacity=0.3"';
+        html += '>';
+
+      } else {
+        html += '<div class="cm-placeholder"><span style="font-size:32px">&#127912;</span><br>';
+        html += '<span style="font-size:9px;opacity:.3;font-family:monospace">No preview added</span></div>';
+      }
+      html += '</div>';
+    }
+
+    html += '</div>'; // cm-slides
+    if (data.length > 1) {
+      html += '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:0 10px;pointer-events:none;z-index:3">';
+      html +=   '<button class="cm-arr" id="cm-prev" style="pointer-events:auto">&#8249;</button>';
+      html +=   '<button class="cm-arr" id="cm-next" style="pointer-events:auto">&#8250;</button>';
+      html += '</div>';
+    }
+    html += '</div></div>'; // body, screen
+    return html;
+  }
+
+  // ── Wire play buttons — event delegation ──
+  function wirePlayButtons() {
+    // Show first frame on all reel videos
+    frameWrap.querySelectorAll('video').forEach(function(vid) {
+      vid.addEventListener('loadedmetadata', function() {
+        vid.currentTime = 0.1;
+      });
+      vid.addEventListener('ended', function() {
+        var ov = vid.parentElement.querySelector('[data-play-ov]');
+        if (ov) ov.style.display = 'flex';
+        vid.currentTime = 0;
+      });
+    });
+
+    // Delegated click on frameWrap for play buttons
+    frameWrap.addEventListener('click', function reelClick(e) {
+      var btn = e.target.closest('[data-play-ov]');
+      if (!btn) return;
+      e.stopPropagation();
+      var vid = btn.parentElement.querySelector('video');
+      if (!vid) return;
+      btn.style.display = 'none';
+      vid.currentTime = 0;
+      vid.play().catch(function() { btn.style.display = 'flex'; });
+    });
+  }
+
+
+  // ── Navigate between slides ──
+  function goSlide(idx) {
+    if (totalSlides <= 1) return;
+    idx = Math.max(0, Math.min(idx, totalSlides - 1));
+
+    var track = document.getElementById('cm-slides');
+    if (!track) return;
+
+    if (isReels) {
+      // Pause current video before sliding
+      var curVid = document.getElementById('rv-' + curSlide);
+      if (curVid) { curVid.pause(); }
+
+      // Show play overlay on paused reel
+      var curOverlay = document.getElementById('rp-' + curSlide);
+      if (curOverlay) curOverlay.style.display = 'flex';
+
+      // Vertical slide — fixed 500px per reel item
+      var REEL_H = 500;
+      gsap.to(track, { y: -(idx * REEL_H), duration: .5, ease: 'power3.inOut' });
+    } else {
+      var w = track.parentElement.offsetWidth;
+      gsap.to(track, { x: -(idx * w), duration: .45, ease: 'cinema' });
+    }
+
+    curSlide = idx;
+    dotEls.forEach(function(d, i) { d.classList.toggle('act', i === idx); });
+  }
+
+  // ── Open modal ──
+  function openModal(card) {
+    var frameType = card.dataset.previewFrame || 'screen';
+    var title     = card.dataset.previewTitle  || 'Creative Work';
+    var label     = card.dataset.previewLabel  || '';
+    var portUrl   = card.dataset.portfolioUrl  || '#';
+    var rawPrev   = (card.dataset.previews || '');
+    // Clean URLs — remove whitespace/newlines from HTML formatting
+    var urls = rawPrev.split(',')
+      .map(function(s){ return cleanUrl(s); })
+      .filter(function(s){ return s.length > 0; });
+
+    isReels     = (frameType === 'reels');
+    totalSlides = Math.max(1, urls.length);
+    curSlide    = 0;
+
+    // Inject frame HTML
+    frameWrap.innerHTML = isReels
+      ? buildReels(urls, card)
+      : buildScreen(urls);
+
+    // Wire video play buttons
+    if (isReels) wirePlayButtons();
+
+    // Set info
+    if (labelEl) labelEl.textContent = label;
+    if (titleEl) titleEl.textContent = title;
+    if (ctaBtn)  ctaBtn.href = portUrl;
+
+    // Build dots
+    dotsWrap.innerHTML = '';
+    dotEls = [];
+    if (totalSlides > 1) {
+      for (var i = 0; i < totalSlides; i++) {
+        (function(idx) {
+          var d = document.createElement('div');
+          d.className = 'cm-dot' + (idx === 0 ? ' act' : '');
+          d.addEventListener('click', function() { goSlide(idx); });
+          dotsWrap.appendChild(d);
+          dotEls.push(d);
+        })(i);
+      }
+    }
+
+    // Wire prev/next for screen
+    var pBtn = document.getElementById('cm-prev');
+    var nBtn = document.getElementById('cm-next');
+    if (pBtn) pBtn.addEventListener('click', function() { goSlide(curSlide - 1); });
+    if (nBtn) nBtn.addEventListener('click', function() { goSlide(curSlide + 1); });
+
+    // Swipe on phone
+    if (isReels) {
+      var phone = frameWrap.querySelector('.cm-phone');
+      if (phone) {
+        var startY = 0;
+        phone.addEventListener('touchstart', function(e) {
+          startY = e.touches[0].clientY;
+        }, { passive: true });
+        phone.addEventListener('touchend', function(e) {
+          var dy = startY - e.changedTouches[0].clientY;
+          if (Math.abs(dy) > 40) goSlide(dy > 0 ? curSlide + 1 : curSlide - 1);
+        }, { passive: true });
+        // Scroll wheel on desktop
+        phone.addEventListener('wheel', function(e) {
+          e.preventDefault();
+          goSlide(e.deltaY > 0 ? curSlide + 1 : curSlide - 1);
+        }, { passive: false });
+      }
+    }
+
+    // Open
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    gsap.fromTo('#cm-box',
+      { scale: .9, y: 24, opacity: 0 },
+      { scale: 1,  y: 0,  opacity: 1, duration: .5, ease: 'cinema' }
+    );
+  }
+
+  // ── Close modal — pause all videos ──
+  function closeModal() {
+    frameWrap.querySelectorAll('video').forEach(function(v) { v.pause(); });
+    gsap.to('#cm-box', {
+      scale: .93, y: 16, opacity: 0, duration: .28, ease: 'power2.in',
+      onComplete: function() {
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+        gsap.set('#cm-box', { clearProps: 'all' });
+        frameWrap.innerHTML = '';
+        dotsWrap.innerHTML  = '';
+        dotEls = [];
+      }
+    });
+  }
+
+  // ── Wire card clicks ──
+  document.querySelectorAll('.cwc[data-preview-frame]').forEach(function(card) {
+    card.addEventListener('click', function(e) {
+      if (e.target.closest('.wc-lnk')) return;
+      openModal(this);
+    });
+  });
+
+  if (backdrop) backdrop.addEventListener('click', closeModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+  window.addEventListener('keydown', function(e) {
+    if (!modal.classList.contains('open')) return;
+    if (e.key === 'Escape')                              closeModal();
+    if (e.key === 'ArrowUp'   || e.key === 'ArrowLeft')  goSlide(curSlide - 1);
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') goSlide(curSlide + 1);
+  });
+
+})();
