@@ -70,7 +70,7 @@ let currentCatX= 0, currentCatY= 0;
   // Performance: grain renders at half resolution scaled up
   // and only every 4 frames — barely visible difference
   let frame = 0;
-  const GRAIN_SCALE = 0.35; // render at 35% size, stretch to full
+  const GRAIN_SCALE = 0.55; // render at 55% size — less blocky grain
   let gW, gH;
 
   const grainResize = () => {
@@ -88,7 +88,7 @@ let currentCatX= 0, currentCatY= 0;
   function drawGrain() {
     frame++;
     // Only redraw every 4 frames — saves 75% CPU
-    if (frame % 4 === 0) {
+    if (frame % 6 === 0) {
       offscreen.width  = gW;
       offscreen.height = gH;
       const imageData = offCtx.createImageData(gW, gH);
@@ -96,7 +96,7 @@ let currentCatX= 0, currentCatY= 0;
       for (let i = 0; i < data.length; i += 4) {
         const v = Math.random() * 255 | 0;
         data[i] = data[i+1] = data[i+2] = v;
-        data[i+3] = 14; // slightly less alpha too
+        data[i+3] = 6; // very subtle — just a hint of texture
       }
       offCtx.putImageData(imageData, 0, 0);
       // Stretch low-res grain to full screen
@@ -922,7 +922,7 @@ document.querySelectorAll('.mc').forEach((cv, idx) => {
     t += .012;
 
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = '#0a0910';
+    ctx.fillStyle = '#07080f';
     ctx.fillRect(0, 0, W, H);
 
     // ── Orbs ──
