@@ -1393,17 +1393,42 @@ document.querySelectorAll('.ct-main-btn').forEach(btn => {
   function buildReelItem(url, idx, cap, likes, cmts, shs, mus) {
     var html = '<div class="reel-item" style="position:relative;height:500px;flex:0 0 500px;overflow:hidden">';
 
-    if (url && isVideoFile(url)) {
+    // Extract YouTube ID from any YT URL format
+    var ytId = '';
+    if (url) {
+      var ytMatch = url.match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);
+      if (ytMatch) ytId = ytMatch[1];
+    }
+
+    if (ytId) {
+      // YOUTUBE — show thumbnail first, load iframe on play
+      // maxresdefault = clean thumbnail, no title/channel text
+      // onerror falls back to mqdefault then hqdefault
+      var thumbUrl2 = 'https://img.youtube.com/vi/' + ytId + '/maxresdefault.jpg';
+      var embedUrl2 = 'https://www.youtube.com/embed/' + ytId + '?autoplay=1&playsinline=1&rel=0&modestbranding=1&controls=1&color=white';
+      var slotId2   = 'yt-slot-' + idx;
+
+      // Thumbnail slot — just the image/iframe
+      html += '<div id="' + slotId2 + '" style="position:absolute;inset:0;z-index:1">';
+      html +=   '<img src="' + thumbUrl2 + '" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" loading="lazy">';
+      html += '</div>';
+
+      // Play overlay — z-index:9 so it sits ABOVE all TikTok UI layers
+      html += '<div data-play-ov="1" data-embed="' + embedUrl2 + '" data-slot="' + slotId2 + '"';
+      html +=   ' style="position:absolute;inset:0;z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;background:rgba(0,0,0,.15)">';
+      html +=   '<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--pink),#c4005a);display:flex;align-items:center;justify-content:center;font-size:26px;padding-left:5px;box-shadow:0 0 36px rgba(255,45,120,.8)">&#9654;</div>';
+      html +=   '<span style="font-family:DM Mono,monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.6)">tap to play</span>';
+      html += '</div>';
+
+    } else if (url && isVideoFile(url)) {
       html += '<video';
       html +=   ' src="' + url + '"';
       html +=   ' preload="metadata"';
       html +=   ' playsinline';
-      html +=   ' muted';
       html +=   ' style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#111"';
       html +=   ' onerror="this.style.opacity=0"';
       html += '></video>';
 
-      // Bright play button overlay — always visible
       html += '<div data-play-ov="1"';
       html +=   ' style="position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer">';
       html +=   '<div style="width:62px;height:62px;border-radius:50%;background:linear-gradient(135deg,var(--pink),#c4005a);display:flex;align-items:center;justify-content:center;font-size:24px;padding-left:4px;box-shadow:0 0 32px rgba(255,45,120,.7);pointer-events:none">&#9654;</div>';
@@ -1419,7 +1444,7 @@ document.querySelectorAll('.ct-main-btn').forEach(btn => {
     }
 
     // TikTok UI overlays (pointer-events:none so video is clickable)
-    html += '<div style="position:absolute;top:0;left:0;right:0;height:100px;background:linear-gradient(to bottom,rgba(0,0,0,.6),transparent);z-index:4;pointer-events:none"></div>';
+    html += '<div style="position:absolute;top:0;left:0;right:0;height:120px;background:linear-gradient(to bottom,rgba(0,0,0,.85) 0%,rgba(0,0,0,.4) 60%,transparent 100%);z-index:4;pointer-events:none"></div>';
     html += '<div style="position:absolute;bottom:0;left:0;right:0;height:180px;background:linear-gradient(to top,rgba(0,0,0,.85),transparent);z-index:4;pointer-events:none"></div>';
 
     // Top nav
@@ -1540,31 +1565,59 @@ document.querySelectorAll('.ct-main-btn').forEach(btn => {
     return html;
   }
 
-  // ── Wire play buttons — event delegation ──
+  // ── Wire play buttons — handles YouTube + local video ──
   function wirePlayButtons() {
-    // Show first frame on all reel videos
+    // Load metadata for local videos
     frameWrap.querySelectorAll('video').forEach(function(vid) {
       vid.addEventListener('loadedmetadata', function() {
         vid.currentTime = 0.1;
       });
-      vid.addEventListener('ended', function() {
-        var ov = vid.parentElement.querySelector('[data-play-ov]');
-        if (ov) ov.style.display = 'flex';
-        vid.currentTime = 0;
-      });
     });
 
-    // Delegated click on frameWrap for play buttons
-    frameWrap.addEventListener('click', function reelClick(e) {
+    // Remove old listener to prevent duplicates
+    if (frameWrap._reelClick) {
+      frameWrap.removeEventListener('click', frameWrap._reelClick);
+    }
+
+    frameWrap._reelClick = function(e) {
       var btn = e.target.closest('[data-play-ov]');
       if (!btn) return;
       e.stopPropagation();
+
+      // YouTube — swap thumbnail with iframe + add overlays to hide title/channel
+      if (btn.dataset.embed && btn.dataset.slot) {
+        var slot = document.getElementById(btn.dataset.slot);
+        if (slot) {
+          slot.innerHTML = '<iframe src="' + btn.dataset.embed + '"'
+            + ' style="position:absolute;inset:0;width:100%;height:100%;border:none"'
+            + ' allow="autoplay;fullscreen" allowfullscreen></iframe>';
+
+          // Solid black covers on top + bottom to hide YT title/channel text
+          var reelItem = slot.closest ? slot.closest('.reel-item') : slot.parentElement;
+          if (reelItem) {
+            var tc = document.createElement('div');
+            tc.setAttribute('data-yt-cover','1');
+            tc.style.cssText = 'position:absolute;top:0;left:0;right:0;height:54px;background:#000;z-index:6;pointer-events:none';
+            var bc = document.createElement('div');
+            bc.setAttribute('data-yt-cover','1');
+            bc.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:70px;background:#000;z-index:6;pointer-events:none';
+            reelItem.appendChild(tc);
+            reelItem.appendChild(bc);
+          }
+        }
+        btn.style.display = 'none';
+        return;
+      }
+
+      // Local video
       var vid = btn.parentElement.querySelector('video');
       if (!vid) return;
       btn.style.display = 'none';
       vid.currentTime = 0;
       vid.play().catch(function() { btn.style.display = 'flex'; });
-    });
+    };
+
+    frameWrap.addEventListener('click', frameWrap._reelClick);
   }
 
 
